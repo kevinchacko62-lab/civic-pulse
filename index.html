@@ -1,0 +1,2125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SetuCivic — Civic Issue Reporting &amp; Escalation Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#0F2A3D;
+  --navy-2:#173B54;
+  --paper:#F3F6F6;
+  --paper-2:#E7ECEC;
+  --line:#D6DEDD;
+  --ink:#132327;
+  --ink-soft:#5B6E70;
+  --amber:#E8A33D;
+  --teal:#1F7A6C;
+  --red:#C0392B;
+  --blue:#2E6E9E;
+  --white:#FFFFFF;
+  --sev-low:#4C8C6B;
+  --sev-medium:#C98A2C;
+  --sev-high:#C0642B;
+  --sev-critical:#B23B3B;
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+html,body{height:100%;}
+body{
+  font-family:'Inter',sans-serif;
+  background:var(--paper);
+  color:var(--ink);
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4,.display{font-family:'Space Grotesk',sans-serif; font-weight:600; letter-spacing:-0.01em;}
+.mono{font-family:'JetBrains Mono',monospace;}
+button{font-family:inherit; cursor:pointer; border:none; background:none;}
+a{color:inherit; text-decoration:none;}
+::selection{background:var(--amber); color:var(--navy);}
+::-webkit-scrollbar{width:8px; height:8px;}
+::-webkit-scrollbar-thumb{background:#B9C6C5; border-radius:4px;}
+
+/* ===== APP SHELL ===== */
+#app{min-height:100vh; display:flex; flex-direction:column;}
+
+/* topbar */
+.topbar{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:10px 20px; background:var(--navy); color:#fff;
+  position:sticky; top:0; z-index:50;
+}
+.brand{display:flex; align-items:center; gap:10px;}
+.seal{
+  width:34px; height:34px; border-radius:50%;
+  background:conic-gradient(from 45deg, var(--amber), #fff0 0deg 0deg);
+  border:2px solid var(--amber);
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:14px; color:var(--amber);
+  flex-shrink:0;
+}
+.brand-text .t1{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:16px; line-height:1.1;}
+.brand-text .t2{font-size:10px; letter-spacing:.08em; text-transform:uppercase; opacity:.65;}
+.topbar-right{display:flex; align-items:center; gap:14px;}
+.icon-btn{
+  width:34px; height:34px; border-radius:9px; display:flex; align-items:center; justify-content:center;
+  color:#fff; position:relative; background:rgba(255,255,255,.08);
+}
+.icon-btn:hover{background:rgba(255,255,255,.16);}
+.badge-dot{
+  position:absolute; top:-3px; right:-3px; min-width:15px; height:15px; padding:0 3px; border-radius:8px;
+  background:var(--red); color:#fff; font-size:9px; font-weight:700; display:flex; align-items:center; justify-content:center;
+  border:2px solid var(--navy);
+}
+.role-chip{
+  font-size:11px; text-transform:uppercase; letter-spacing:.06em; font-weight:600;
+  background:rgba(232,163,61,.16); color:var(--amber); padding:5px 10px; border-radius:20px;
+  border:1px solid rgba(232,163,61,.35);
+}
+
+/* layout: sidebar (staff) */
+.layout{flex:1; display:flex; min-height:0;}
+.sidebar{
+  width:236px; background:var(--navy-2); color:#EAF1F0; flex-shrink:0;
+  display:flex; flex-direction:column; padding:18px 12px;
+}
+.sidebar-nav{margin-top:10px; display:flex; flex-direction:column; gap:2px;}
+.snav-item{
+  display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:8px;
+  color:#C6D6D4; font-size:13.5px; font-weight:500;
+}
+.snav-item:hover{background:rgba(255,255,255,.06); color:#fff;}
+.snav-item.active{background:var(--amber); color:var(--navy); font-weight:700;}
+.sidebar-foot{margin-top:auto; padding:12px; font-size:11px; color:#8FA5A3; border-top:1px solid rgba(255,255,255,.1);}
+
+.main{flex:1; min-width:0; overflow-y:auto; padding:22px 26px 60px;}
+.main.mobile-main{padding:0 0 78px; max-width:480px; margin:0 auto; width:100%; background:var(--paper);}
+
+/* mobile phone frame */
+.mobile-shell{max-width:480px; margin:0 auto; width:100%; min-height:100vh; display:flex; flex-direction:column; background:var(--paper); box-shadow:0 0 0 1px var(--line);}
+.bottom-nav{
+  position:fixed; bottom:0; left:50%; transform:translateX(-50%);
+  width:100%; max-width:480px; background:#fff; border-top:1px solid var(--line);
+  display:flex; z-index:60;
+}
+.bn-item{flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; padding:10px 4px 8px; color:#8B9E9C; font-size:10px; font-weight:600;}
+.bn-item.active{color:var(--navy);}
+.bn-item.active svg{stroke:var(--amber);}
+.bn-item .fab-circle{
+  width:46px; height:46px; border-radius:50%; background:var(--amber); display:flex; align-items:center; justify-content:center;
+  margin-top:-24px; box-shadow:0 4px 10px rgba(232,163,61,.4); border:4px solid #fff;
+}
+.bn-item .fab-circle svg{stroke:var(--navy);}
+
+/* section header */
+.page-head{display:flex; align-items:flex-end; justify-content:space-between; margin-bottom:18px; flex-wrap:wrap; gap:10px;}
+.page-head h1{font-size:22px;}
+.page-head p{color:var(--ink-soft); font-size:13px; margin-top:3px;}
+.eyebrow{font-size:11px; letter-spacing:.09em; text-transform:uppercase; color:var(--teal); font-weight:700; margin-bottom:4px;}
+
+/* cards */
+.card{background:#fff; border:1px solid var(--line); border-radius:12px;}
+.pad{padding:16px;}
+.grid{display:grid; gap:14px;}
+.grid-4{grid-template-columns:repeat(4,1fr);}
+.grid-3{grid-template-columns:repeat(3,1fr);}
+.grid-2{grid-template-columns:repeat(2,1fr);}
+@media(max-width:1100px){.grid-4{grid-template-columns:repeat(2,1fr);} .grid-3{grid-template-columns:repeat(2,1fr);}}
+
+.kpi{padding:16px; display:flex; flex-direction:column; gap:6px;}
+.kpi .label{font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-soft); font-weight:600;}
+.kpi .value{font-family:'Space Grotesk',sans-serif; font-size:26px; font-weight:700;}
+.kpi .sub{font-size:11px; color:var(--ink-soft);}
+.kpi.accent-navy{border-top:3px solid var(--navy);}
+.kpi.accent-amber{border-top:3px solid var(--amber);}
+.kpi.accent-teal{border-top:3px solid var(--teal);}
+.kpi.accent-red{border-top:3px solid var(--red);}
+
+/* buttons */
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:7px;
+  padding:10px 16px; border-radius:9px; font-size:13.5px; font-weight:600; white-space:nowrap;
+  transition:transform .05s ease;
+}
+.btn:active{transform:scale(.97);}
+.btn-primary{background:var(--navy); color:#fff;}
+.btn-primary:hover{background:#0B2130;}
+.btn-amber{background:var(--amber); color:var(--navy);}
+.btn-amber:hover{background:#DE9628;}
+.btn-outline{background:#fff; border:1.4px solid var(--line); color:var(--ink);}
+.btn-outline:hover{border-color:var(--navy);}
+.btn-ghost{color:var(--navy); font-weight:600;}
+.btn-ghost:hover{text-decoration:underline;}
+.btn-danger{background:var(--red); color:#fff;}
+.btn-sm{padding:6px 11px; font-size:12px; border-radius:7px;}
+.btn-block{width:100%;}
+.btn[disabled]{opacity:.45; pointer-events:none;}
+
+/* chips / status */
+.chip{display:inline-flex; align-items:center; gap:5px; padding:4px 10px; border-radius:20px; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.02em;}
+.chip::before{content:''; width:6px; height:6px; border-radius:50%; background:currentColor;}
+.chip-low{background:#EAF3EC; color:var(--sev-low);}
+.chip-medium{background:#FBF0DF; color:var(--sev-medium);}
+.chip-high{background:#FBE7DD; color:var(--sev-high);}
+.chip-critical{background:#FBE2E0; color:var(--sev-critical);}
+.chip-submitted{background:#E9EEF3; color:var(--blue);}
+.chip-verification{background:#F2ECFB; color:#7A4FC9;}
+.chip-verified{background:#E4F2EE; color:var(--teal);}
+.chip-assigned{background:#EFF0F8; color:#5A5FC7;}
+.chip-accepted{background:#E6EEF6; color:var(--blue);}
+.chip-progress{background:#FDF2DC; color:#B5810E;}
+.chip-resolved{background:#E2F3EA; color:#2C8558;}
+.chip-closed{background:#E8ECEC; color:#5B6E70;}
+.chip-escalated{background:#FCE3E1; color:var(--red);}
+.chip-duplicate{background:#EDEDED; color:#767676;}
+.chip-reopened{background:#FCEBD9; color:#B05B15;}
+.chip-suspicious{background:#FBE2E0; color:var(--red);}
+
+.status-dot{width:8px; height:8px; border-radius:50%; display:inline-block;}
+
+/* form elements */
+label.f{display:block; font-size:12.5px; font-weight:600; margin-bottom:6px; color:var(--ink);}
+.help{font-size:11.5px; color:var(--ink-soft); margin-top:4px;}
+input[type=text],input[type=email],input[type=tel],input[type=password],input[type=number],textarea,select{
+  width:100%; padding:10px 12px; border-radius:8px; border:1.4px solid var(--line); font-family:inherit; font-size:13.5px; background:#fff; color:var(--ink);
+}
+input:focus,textarea:focus,select:focus{outline:2px solid var(--amber); outline-offset:1px; border-color:var(--amber);}
+textarea{resize:vertical; min-height:80px;}
+.field{margin-bottom:14px;}
+.otp-boxes{display:flex; gap:8px;}
+.otp-boxes input{width:42px; height:48px; text-align:center; font-size:18px; font-weight:700;}
+
+.cat-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:10px;}
+.cat-tile{
+  border:1.6px solid var(--line); border-radius:12px; padding:12px 8px; text-align:center; background:#fff;
+  display:flex; flex-direction:column; align-items:center; gap:6px; font-size:11px; font-weight:600; color:var(--ink);
+}
+.cat-tile svg{stroke:var(--navy);}
+.cat-tile.selected{border-color:var(--amber); background:#FFF8EC; box-shadow:0 0 0 1px var(--amber) inset;}
+.cat-tile.selected svg{stroke:var(--amber);}
+
+/* stepper */
+.stepper{display:flex; align-items:center; gap:6px; margin-bottom:18px;}
+.step-dot{
+  flex:1; height:5px; border-radius:3px; background:var(--paper-2);
+}
+.step-dot.done{background:var(--teal);}
+.step-dot.current{background:var(--amber);}
+
+/* timeline */
+.timeline{position:relative; padding-left:26px;}
+.tl-item{position:relative; padding-bottom:20px;}
+.tl-item::before{content:''; position:absolute; left:-20px; top:2px; width:11px; height:11px; border-radius:50%; background:var(--line); border:2px solid #fff; box-shadow:0 0 0 1.5px var(--line);}
+.tl-item.done::before{background:var(--teal); box-shadow:0 0 0 1.5px var(--teal);}
+.tl-item.current::before{background:var(--amber); box-shadow:0 0 0 1.5px var(--amber);}
+.tl-item::after{content:''; position:absolute; left:-15px; top:14px; bottom:-6px; width:1.6px; background:var(--line);}
+.tl-item:last-child::after{display:none;}
+.tl-title{font-size:13px; font-weight:700;}
+.tl-meta{font-size:11px; color:var(--ink-soft); margin-top:2px;}
+.tl-note{font-size:12px; color:var(--ink-soft); margin-top:4px; background:var(--paper); border-radius:7px; padding:7px 9px;}
+
+/* complaint id stamp */
+.stamp{
+  display:inline-flex; align-items:center; gap:8px; border:2px solid var(--navy); border-radius:8px; padding:5px 11px;
+  transform:rotate(-1.2deg); font-family:'JetBrains Mono',monospace; font-weight:700; font-size:12.5px; color:var(--navy);
+  background:repeating-linear-gradient(135deg, rgba(15,42,61,.03) 0 6px, transparent 6px 12px);
+}
+
+/* table */
+table{width:100%; border-collapse:collapse; font-size:13px;}
+th{text-align:left; font-size:10.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-soft); font-weight:700; padding:9px 10px; border-bottom:1.4px solid var(--line);}
+td{padding:11px 10px; border-bottom:1px solid var(--line); vertical-align:middle;}
+tr:hover td{background:#FAFBFB;}
+.table-wrap{overflow-x:auto;}
+
+/* notif */
+.notif-item{display:flex; gap:11px; padding:12px 14px; border-bottom:1px solid var(--line);}
+.notif-item:last-child{border-bottom:none;}
+.notif-ico{width:34px; height:34px; border-radius:9px; flex-shrink:0; display:flex; align-items:center; justify-content:center; background:var(--paper-2);}
+.notif-text{font-size:13px; font-weight:600;}
+.notif-sub{font-size:11.5px; color:var(--ink-soft); margin-top:2px;}
+.notif-time{font-size:10.5px; color:#9DABA9; white-space:nowrap;}
+.notif-unread{background:#FFFBF3;}
+
+/* ai panel */
+.ai-flow{display:flex; align-items:center; gap:6px; flex-wrap:wrap; font-size:11.5px; font-weight:600; color:var(--ink-soft);}
+.ai-flow .node{background:var(--paper); border:1px solid var(--line); border-radius:7px; padding:4px 9px;}
+.ai-flow .arrow{color:#B9C6C5;}
+.mock-tag{font-size:9.5px; text-transform:uppercase; letter-spacing:.05em; font-weight:700; color:#fff; background:var(--ink-soft); padding:2px 7px; border-radius:5px;}
+
+/* modal */
+.overlay{position:fixed; inset:0; background:rgba(11,25,35,.55); display:flex; align-items:center; justify-content:center; z-index:200; padding:20px;}
+.modal{background:#fff; border-radius:14px; max-width:520px; width:100%; max-height:88vh; overflow-y:auto;}
+.modal-head{display:flex; align-items:center; justify-content:space-between; padding:16px 18px; border-bottom:1px solid var(--line);}
+.modal-body{padding:18px;}
+.modal-foot{padding:14px 18px; border-top:1px solid var(--line); display:flex; justify-content:flex-end; gap:10px;}
+
+/* toast */
+#toast-wrap{position:fixed; top:70px; right:20px; z-index:400; display:flex; flex-direction:column; gap:8px;}
+.toast{
+  background:var(--navy); color:#fff; padding:11px 16px; border-radius:9px; font-size:13px; font-weight:600;
+  box-shadow:0 8px 20px rgba(0,0,0,.18); display:flex; align-items:center; gap:9px; min-width:240px; max-width:340px;
+  animation:slidein .25s ease;
+}
+.toast.success{background:var(--teal);}
+.toast.warn{background:var(--amber); color:var(--navy);}
+.toast.danger{background:var(--red);}
+@keyframes slidein{from{opacity:0; transform:translateX(20px);} to{opacity:1; transform:translateX(0);}}
+
+/* map mock */
+.map-box{
+  position:relative; border-radius:12px; overflow:hidden; border:1px solid var(--line);
+  background:
+   linear-gradient(0deg, rgba(15,42,61,.05) 1px, transparent 1px) 0 0/28px 28px,
+   linear-gradient(90deg, rgba(15,42,61,.05) 1px, transparent 1px) 0 0/28px 28px,
+   #E9EFEE;
+  height:100%;
+}
+.map-pin{position:absolute; transform:translate(-50%,-100%); display:flex; flex-direction:column; align-items:center; cursor:pointer;}
+.map-pin .dot{width:16px; height:16px; border-radius:50% 50% 50% 0; transform:rotate(-45deg); border:2px solid #fff; box-shadow:0 2px 5px rgba(0,0,0,.3);}
+.map-pin.critical .dot{background:var(--sev-critical);}
+.map-pin.high .dot{background:var(--sev-high);}
+.map-pin.medium .dot{background:var(--sev-medium);}
+.map-pin.low .dot{background:var(--sev-low);}
+.map-pin .pin-label{margin-top:2px; background:#132327; color:#fff; font-size:9.5px; padding:2px 5px; border-radius:4px; white-space:nowrap; opacity:0; pointer-events:none; transition:opacity .12s;}
+.map-pin:hover .pin-label{opacity:1;}
+.map-legend{position:absolute; bottom:10px; left:10px; background:rgba(255,255,255,.92); border-radius:8px; padding:8px 10px; font-size:10.5px; display:flex; gap:10px; border:1px solid var(--line);}
+.map-legend span{display:flex; align-items:center; gap:5px;}
+.map-legend i{width:8px; height:8px; border-radius:50%; display:inline-block;}
+
+/* misc */
+.divider{height:1px; background:var(--line); margin:16px 0;}
+.muted{color:var(--ink-soft);}
+.flex{display:flex;} .items-center{align-items:center;} .justify-between{justify-content:space-between;} .gap-8{gap:8px;} .gap-10{gap:10px;} .gap-14{gap:14px;}
+.upload-box{border:2px dashed var(--line); border-radius:10px; padding:18px; text-align:center; color:var(--ink-soft); font-size:12.5px; background:#FAFBFB;}
+.upload-thumb{width:64px; height:64px; border-radius:8px; background:linear-gradient(135deg,#DDE7E5,#C6D3D1); display:flex; align-items:center; justify-content:center; position:relative; flex-shrink:0;}
+.tag-row{display:flex; flex-wrap:wrap; gap:6px;}
+.progress-bar{height:7px; border-radius:4px; background:var(--paper-2); overflow:hidden;}
+.progress-bar > div{height:100%; border-radius:4px;}
+.score-ring{position:relative; width:64px; height:64px;}
+.priority-score-lg{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:34px;}
+.hidden{display:none !important;}
+.hint-banner{background:#EFF6FB; border:1px solid #CFE3F0; color:#215379; padding:10px 13px; border-radius:9px; font-size:12px; display:flex; gap:9px; align-items:flex-start;}
+.warn-banner{background:#FDF4E4; border:1px solid #F0DBA9; color:#7A5710; padding:10px 13px; border-radius:9px; font-size:12px; display:flex; gap:9px; align-items:flex-start;}
+.danger-banner{background:#FBE7E5; border:1px solid #EFC1BB; color:#8A2E23; padding:10px 13px; border-radius:9px; font-size:12px; display:flex; gap:9px; align-items:flex-start;}
+.link-inline{color:var(--blue); font-weight:600; cursor:pointer;}
+.avatar{width:34px; height:34px; border-radius:50%; background:var(--navy); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13px; flex-shrink:0;}
+.card-hover:hover{border-color:var(--amber); box-shadow:0 2px 10px rgba(15,42,61,.06);}
+.emoji-badge{width:40px; height:40px; border-radius:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0;}
+.slider-row{display:flex; align-items:center; gap:10px;}
+input[type=range]{flex:1; accent-color:var(--amber);}
+.login-shell{min-height:100vh; display:flex; align-items:center; justify-content:center; background:var(--navy); padding:20px;}
+.login-card{background:#fff; border-radius:16px; padding:32px 30px; max-width:400px; width:100%;}
+.role-pick{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:6px;}
+.role-btn{border:1.6px solid var(--line); border-radius:10px; padding:12px 10px; text-align:left; font-size:12.5px;}
+.role-btn.active{border-color:var(--amber); background:#FFF8EC;}
+.role-btn .rt{font-weight:700; font-size:13px; display:flex; align-items:center; gap:7px;}
+.small{font-size:11.5px;}
+.close-x{width:28px; height:28px; border-radius:8px; display:flex; align-items:center; justify-content:center; color:var(--ink-soft);}
+.close-x:hover{background:var(--paper);}
+</style>
+</head>
+<body>
+<div id="toast-wrap"></div>
+<div id="app"></div>
+
+<script>
+/* ============================================================
+   SETUCIVIC — CIVIC ISSUE REPORTING & ESCALATION PLATFORM
+   Functional front-end prototype. All AI, backend & GPS calls
+   are SIMULATED — see AI_SERVICE / API_SERVICE below, which are
+   built as swappable modules for real FastAPI + ML integration.
+   ============================================================ */
+
+/* ---------------- ICONS (feather-style inline svg) ---------------- */
+const ICONS = {
+  home:'<path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/>',
+  report:'<path d="M12 5v14M5 12h14"/>',
+  list:'<path d="M8 6h13M8 12h13M8 18h13"/><circle cx="3" cy="6" r="1"/><circle cx="3" cy="12" r="1"/><circle cx="3" cy="18" r="1"/>',
+  map:'<path d="M9 20l-6-3V4l6 3 6-3 6 3v13l-6-3-6 3z"/><path d="M9 4v13M15 7v13"/>',
+  user:'<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/>',
+  bell:'<path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 01-3.4 0"/>',
+  vote:'<path d="M7 11l5-7 5 7"/><path d="M12 4v16"/><path d="M5 21h14"/>',
+  alert:'<path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9L1.8 18a2 2 0 001.7 3h17a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z"/>',
+  camera:'<path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h3l2-3h8l2 3h3a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/>',
+  pin:'<path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/>',
+  check:'<path d="M20 6L9 17l-5-5"/>',
+  chev:'<path d="M9 18l6-6-6-6"/>',
+  chevDown:'<path d="M6 9l6 6 6-6"/>',
+  clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/>',
+  spark:'<path d="M12 2l1.8 5.6L19 9l-5.2 1.4L12 16l-1.8-5.6L5 9l5.2-1.4L12 2z"/>',
+  logout:'<path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/>',
+  grid:'<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>',
+  dept:'<path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/><path d="M9 21v-6h6v6"/>',
+  users:'<path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/>',
+  esc:'<path d="M12 19V5"/><path d="M5 12l7-7 7 7"/>',
+  settings:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.6 1.6 0 00-1.8-.3 1.6 1.6 0 00-1 1.5V21a2 2 0 01-4 0v-.1a1.6 1.6 0 00-1-1.5 1.6 1.6 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.6 1.6 0 00.3-1.8 1.6 1.6 0 00-1.5-1H3a2 2 0 010-4h.1a1.6 1.6 0 001.5-1 1.6 1.6 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.6 1.6 0 001.8.3H9a1.6 1.6 0 001-1.5V3a2 2 0 014 0v.1a1.6 1.6 0 001 1.5 1.6 1.6 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.6 1.6 0 00-.3 1.8V9a1.6 1.6 0 001.5 1H21a2 2 0 010 4h-.1a1.6 1.6 0 00-1.5 1z"/>',
+  chart:'<path d="M3 3v18h18"/><path d="M18 17V9M13 17V5M8 17v-4"/>',
+  award:'<circle cx="12" cy="8" r="6"/><path d="M9 13l-1.5 8L12 19l4.5 2L15 13"/>',
+  worker:'<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/>',
+  search:'<circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/>',
+  filter:'<path d="M22 3H2l8 9.5V19l4 2v-8.5L22 3z"/>',
+  image:'<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/>',
+  shield:'<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
+  x:'<path d="M18 6L6 18M6 6l12 12"/>',
+  plus:'<path d="M12 5v14M5 12h14"/>',
+  arrowRight:'<path d="M5 12h14M13 5l7 7-7 7"/>',
+  send:'<path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/>',
+  star:'<path d="M12 2l3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1L12 2z"/>',
+  info:'<circle cx="12" cy="12" r="10"/><path d="M12 16v-5M12 8h.01"/>',
+  road:'<path d="M4 22l5-20h6l5 20"/><path d="M12 6v3M12 13v3"/>',
+  trash:'<path d="M3 6h18"/><path d="M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>',
+  droplet:'<path d="M12 2s7 8.5 7 13a7 7 0 11-14 0c0-4.5 7-13 7-13z"/>',
+  wave:'<path d="M2 12c2-3 4-3 6 0s4 3 6 0 4-3 6 0"/><path d="M2 18c2-3 4-3 6 0s4 3 6 0 4-3 6 0"/>',
+  bolt:'<path d="M13 2L4 14h6l-1 8 9-12h-6l1-8z"/>',
+  lamp:'<path d="M9 18h6"/><path d="M10 22h4"/><circle cx="12" cy="7" r="5"/><path d="M12 12v6"/>',
+  tree:'<path d="M12 2l5 8h-3l4 6h-4v6h-4v-6H6l4-6H7z"/>',
+  fire:'<path d="M12 2s5 5 5 10a5 5 0 01-10 0c0-2 1-3 1-3s1 2 3 2c0-3-2-4-2-7 1 0 3-1 3-2z"/>',
+};
+function icon(name, size=18, cls=''){
+  return `<svg class="${cls}" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICONS[name]||''}</svg>`;
+}
+
+/* ---------------- CATEGORY MODEL ---------------- */
+const CATEGORIES = [
+  {id:'roads', name:'Roads & Infrastructure', icon:'road', dept:'Municipal Engineering Department',
+   types:['Pothole','Damaged road','Broken footpath','Damaged road sign','Road obstruction']},
+  {id:'waste', name:'Waste & Sanitation', icon:'trash', dept:'Sanitation / Solid Waste Department',
+   types:['Garbage accumulation','Overflowing garbage bin','Illegal dumping','Waste collection problem']},
+  {id:'water', name:'Water Supply', icon:'droplet', dept:'Water Supply Department',
+   types:['Water leakage','No water supply','Low water pressure','Contaminated water']},
+  {id:'drainage', name:'Drainage & Sewage', icon:'wave', dept:'Drainage / Sewerage Department',
+   types:['Blocked drain','Sewage overflow','Open manhole','Waterlogging']},
+  {id:'electricity', name:'Electricity', icon:'bolt', dept:'Electricity Distribution Authority',
+   types:['Power outage','Damaged electrical pole','Broken wire','Electrical hazard']},
+  {id:'streetlight', name:'Streetlights', icon:'lamp', dept:'Street Lighting Department',
+   types:['Streetlight not working','Broken streetlight','Dark public area']},
+  {id:'parks', name:'Parks & Public Spaces', icon:'tree', dept:'Parks & Horticulture Department',
+   types:['Damaged park equipment','Poor park maintenance','Fallen tree','Public space damage']},
+  {id:'emergency', name:'Emergency / Disaster', icon:'fire', dept:'District Emergency Response Cell',
+   types:['Flooding','Disaster-related assistance','Dangerous infrastructure','Other urgent public emergency']},
+];
+function catById(id){ return CATEGORIES.find(c=>c.id===id); }
+
+/* severity → base info */
+const SEVERITY_ORDER = ['Low','Medium','High','Critical'];
+function sevRank(s){ return SEVERITY_ORDER.indexOf(s); }
+
+/* ---------------- CONFIG (admin-editable) ---------------- */
+const CONFIG = {
+  weights:{ severity:40, community:25, impact:20, waiting:15 },
+  deadlines:{ Critical:24, High:48, Medium:72, Low:168 }, // hours
+};
+
+/* ---------------- AI SERVICE (MOCK — replace with FastAPI /ai/* ) ---------------- */
+const AI_SERVICE = {
+  /* Simulated image classification. In production: POST /ai/classify (multipart image) → CV model */
+  classifyImage(categoryId, typeName){
+    const table = {
+      'Pothole':{label:'Pothole / Road Surface Damage', confidence:0.94, severity:'High'},
+      'Damaged road':{label:'Road Surface Deterioration', confidence:0.89, severity:'Medium'},
+      'Broken footpath':{label:'Footpath Structural Damage', confidence:0.86, severity:'Medium'},
+      'Damaged road sign':{label:'Signage Damage', confidence:0.81, severity:'Low'},
+      'Road obstruction':{label:'Roadway Obstruction', confidence:0.88, severity:'Medium'},
+      'Garbage accumulation':{label:'Solid Waste Accumulation', confidence:0.92, severity:'Medium'},
+      'Overflowing garbage bin':{label:'Bin Overflow', confidence:0.9, severity:'Medium'},
+      'Illegal dumping':{label:'Unauthorized Waste Dumping', confidence:0.87, severity:'High'},
+      'Waste collection problem':{label:'Waste Collection Lapse', confidence:0.8, severity:'Low'},
+      'Water leakage':{label:'Pipeline Leakage', confidence:0.91, severity:'High'},
+      'No water supply':{label:'Supply Interruption', confidence:0.84, severity:'High'},
+      'Low water pressure':{label:'Pressure Deficiency', confidence:0.78, severity:'Medium'},
+      'Contaminated water':{label:'Water Contamination Indicators', confidence:0.83, severity:'Critical'},
+      'Blocked drain':{label:'Drain Blockage', confidence:0.9, severity:'Medium'},
+      'Sewage overflow':{label:'Sewage Overflow', confidence:0.93, severity:'High'},
+      'Open manhole':{label:'Open/Uncovered Manhole', confidence:0.95, severity:'Critical'},
+      'Waterlogging':{label:'Surface Waterlogging', confidence:0.88, severity:'High'},
+      'Power outage':{label:'Localized Power Outage', confidence:0.85, severity:'Medium'},
+      'Damaged electrical pole':{label:'Electrical Pole Damage', confidence:0.9, severity:'High'},
+      'Broken wire':{label:'Exposed / Broken Wiring', confidence:0.93, severity:'Critical'},
+      'Electrical hazard':{label:'Electrical Hazard', confidence:0.96, severity:'Critical'},
+      'Streetlight not working':{label:'Streetlight Outage', confidence:0.87, severity:'Low'},
+      'Broken streetlight':{label:'Streetlight Fixture Damage', confidence:0.85, severity:'Low'},
+      'Dark public area':{label:'Inadequate Public Lighting', confidence:0.79, severity:'Medium'},
+      'Damaged park equipment':{label:'Park Equipment Damage', confidence:0.82, severity:'Low'},
+      'Poor park maintenance':{label:'Maintenance Deficiency', confidence:0.75, severity:'Low'},
+      'Fallen tree':{label:'Fallen Tree / Obstruction', confidence:0.91, severity:'High'},
+      'Public space damage':{label:'Public Asset Damage', confidence:0.8, severity:'Medium'},
+      'Flooding':{label:'Flood-affected Area', confidence:0.94, severity:'Critical'},
+      'Disaster-related assistance':{label:'Disaster Impact Zone', confidence:0.9, severity:'Critical'},
+      'Dangerous infrastructure':{label:'Structurally Unsafe Infrastructure', confidence:0.92, severity:'Critical'},
+      'Other urgent public emergency':{label:'Unclassified Emergency', confidence:0.7, severity:'Critical'},
+    };
+    const base = table[typeName] || {label:typeName, confidence:0.75, severity:'Medium'};
+    // small deterministic jitter so repeated demo runs feel alive but stable per type
+    return {...base, confidence: Math.round(base.confidence*100)};
+  },
+  /* Simulated fake/suspicious detection. Production: CV forensics + metadata cross-check service */
+  verifyReport({hasImage, description}){
+    let flags = [];
+    if(!hasImage) flags.push('No supporting image evidence attached');
+    if(description && description.trim().length < 12) flags.push('Description too brief to corroborate the issue');
+    const r = Math.random();
+    if(flags.length===0 && r < 0.85) return {status:'VERIFIED', flags:[]};
+    if(flags.length>0 || r < 0.95) return {status:'REQUIRES MANUAL VERIFICATION', flags: flags.length?flags:['Automated confidence below threshold — routed for human review']};
+    return {status:'SUSPICIOUS', flags:['Image metadata inconsistent with reported location']};
+  },
+  /* Simulated duplicate detection against existing store */
+  findDuplicate(newComplaint, allComplaints){
+    const candidates = allComplaints.filter(c =>
+      c.categoryId===newComplaint.categoryId &&
+      c.id !== newComplaint.id &&
+      distanceMeters(c.location, newComplaint.location) < 120
+    );
+    if(candidates.length===0) return null;
+    candidates.sort((a,b)=>distanceMeters(a.location,newComplaint.location)-distanceMeters(b.location,newComplaint.location));
+    const nearest = candidates[0];
+    return {
+      complaint: nearest,
+      distance: Math.round(distanceMeters(nearest.location, newComplaint.location)),
+    };
+  },
+  /* Simulated severity engine */
+  assessSeverity(categoryId, typeName, aiResult){
+    let sev = aiResult.severity;
+    let reason = `Based on issue type "${typeName}" and image analysis pattern.`;
+    if(categoryId==='emergency'){ sev='Critical'; reason='Classified under Emergency / Disaster category — public safety priority.'; }
+    if(typeName==='Electrical hazard' || typeName==='Broken wire'){ sev='Critical'; reason='Exposed electrical hazard — potential public safety risk.'; }
+    if(typeName==='Open manhole'){ sev='Critical'; reason='Open manhole poses immediate fall/injury risk to pedestrians and vehicles.'; }
+    if(typeName==='Contaminated water'){ sev='Critical'; reason='Potential public health hazard from contaminated water supply.'; }
+    return {severity:sev, reason};
+  },
+};
+
+/* ---------------- ROUTING SERVICE (configurable rules) ---------------- */
+const ROUTING_RULES = CATEGORIES.reduce((m,c)=>{ m[c.id]=c.dept; return m; },{});
+function routeDepartment(categoryId){ return ROUTING_RULES[categoryId] || 'General Administration'; }
+
+/* ---------------- PRIORITY ENGINE ---------------- */
+function computePriority(c){
+  const sevScore = (sevRank(c.severity)+1)/4*100; // 25,50,75,100
+  const commScore = Math.min(100, c.supporters*10);
+  const impactMap = {roads:70,waste:55,water:80,drainage:75,electricity:85,streetlight:45,parks:35,emergency:100};
+  const impactScore = impactMap[c.categoryId] ?? 50;
+  const hoursWaiting = (Date.now() - c.createdAt) / 3600000;
+  const deadline = CONFIG.deadlines[c.severity] || 72;
+  const waitScore = Math.min(100, (hoursWaiting/deadline)*100);
+  const w = CONFIG.weights;
+  const total = (sevScore*w.severity + commScore*w.community + impactScore*w.impact + waitScore*w.waiting)/100;
+  return Math.round(Math.min(100,total));
+}
+function priorityLabel(score){
+  if(score>=80) return 'CRITICAL';
+  if(score>=60) return 'HIGH';
+  if(score>=35) return 'MEDIUM';
+  return 'LOW';
+}
+
+/* ---------------- UTIL ---------------- */
+function distanceMeters(a,b){
+  const R=6371000;
+  const dLat=(b.lat-a.lat)*Math.PI/180, dLng=(b.lng-a.lng)*Math.PI/180;
+  const la1=a.lat*Math.PI/180, la2=b.lat*Math.PI/180;
+  const h=Math.sin(dLat/2)**2 + Math.cos(la1)*Math.cos(la2)*Math.sin(dLng/2)**2;
+  return 2*R*Math.asin(Math.sqrt(h));
+}
+function fmtDate(ts){ const d=new Date(ts); return d.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}); }
+function fmtDateTime(ts){ const d=new Date(ts); return d.toLocaleString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}); }
+function timeAgo(ts){
+  const s = Math.floor((Date.now()-ts)/1000);
+  if(s<60) return 'just now';
+  if(s<3600) return Math.floor(s/60)+'m ago';
+  if(s<86400) return Math.floor(s/3600)+'h ago';
+  return Math.floor(s/86400)+'d ago';
+}
+function hoursLeft(c){
+  const deadline = c.createdAt + (CONFIG.deadlines[c.severity]||72)*3600000;
+  return (deadline - Date.now())/3600000;
+}
+function severityColor(s){ return {Low:'var(--sev-low)',Medium:'var(--sev-medium)',High:'var(--sev-high)',Critical:'var(--sev-critical)'}[s]; }
+function chipClassForStatus(s){
+  const m = {
+    'Submitted':'submitted','AI Verification':'verification','Verified':'verified','Assigned':'assigned',
+    'Accepted':'accepted','In Progress':'progress','Resolved':'resolved','Closed':'closed',
+    'Escalated':'escalated','Duplicate':'duplicate','Reopened':'reopened','Requires Manual Verification':'verification','Suspicious':'suspicious'
+  };
+  return 'chip-'+(m[s]||'submitted');
+}
+function uid(prefix='ID'){ return prefix+'-'+Math.random().toString(36).slice(2,8).toUpperCase(); }
+function toast(msg, type='default', ms=3400){
+  const wrap = document.getElementById('toast-wrap');
+  const el = document.createElement('div');
+  el.className = 'toast '+(type==='default'?'':type);
+  el.innerHTML = (type==='success'?icon('check',16):type==='danger'?icon('alert',16):type==='warn'?icon('esc',16):icon('bell',16)) + '<span>'+msg+'</span>';
+  wrap.appendChild(el);
+  setTimeout(()=>{ el.style.transition='opacity .3s'; el.style.opacity='0'; setTimeout(()=>el.remove(),300); }, ms);
+}
+
+/* ---------------- WARDS / JURISDICTION (mock) ---------------- */
+const WARDS = [
+  {name:'Ward 12 — Anna Nagar', lat:13.086, lng:80.210},
+  {name:'Ward 27 — T. Nagar', lat:13.041, lng:80.233},
+  {name:'Ward 45 — Adyar', lat:13.006, lng:80.257},
+  {name:'Ward 8 — Kilpauk', lat:13.084, lng:80.243},
+  {name:'Ward 33 — Mylapore', lat:13.033, lng:80.269},
+];
+function nearestWard(loc){
+  let best=WARDS[0], bd=Infinity;
+  WARDS.forEach(w=>{ const d=distanceMeters(loc,w); if(d<bd){bd=d;best=w;} });
+  return best.name;
+}
+function randLoc(center){
+  return {lat: center.lat + (Math.random()-0.5)*0.01, lng: center.lng + (Math.random()-0.5)*0.01};
+}
+
+/* ============================================================
+   STATE (in-memory app "database" — mirrors entities in section 26)
+   ============================================================ */
+const DB = { complaints:[], users:[], notifications:[], performance:{} };
+
+const CITIZENS = ['Arjun Iyer','Divya Ramesh','Karthik Suresh','Priya Natarajan','Vignesh Bala','Sneha Kumar','Ramesh Babu','Lakshmi Narayan','Mohammed Faizal','Anitha Selvam'];
+function randCitizen(){ return CITIZENS[Math.floor(Math.random()*CITIZENS.length)]; }
+
+const OFFICERS = {
+  'Municipal Engineering Department':'Officer S. Kannan',
+  'Sanitation / Solid Waste Department':'Officer R. Meena',
+  'Water Supply Department':'Officer T. Balaji',
+  'Drainage / Sewerage Department':'Officer V. Ganesh',
+  'Electricity Distribution Authority':'Officer P. Suresh',
+  'Street Lighting Department':'Officer A. Dinesh',
+  'Parks & Horticulture Department':'Officer K. Revathi',
+  'District Emergency Response Cell':'Officer N. Vijay',
+};
+
+function seedDemoData(){
+  const templates = [
+    ['roads','Pothole','High',87,'In Progress',9],
+    ['waste','Garbage accumulation','Medium',63,'Verified',5],
+    ['water','Water leakage','High',82,'Resolved',7],
+    ['electricity','Electrical hazard','Critical',96,'Escalated',3],
+    ['drainage','Blocked drain','Medium',58,'Assigned',4],
+    ['streetlight','Streetlight not working','Low',34,'Submitted',2],
+    ['roads','Damaged road','Medium',61,'In Progress',6],
+    ['parks','Fallen tree','High',74,'Accepted',3],
+    ['waste','Overflowing garbage bin','Medium',55,'Resolved',12],
+    ['water','No water supply','High',79,'In Progress',8],
+    ['drainage','Open manhole','Critical',92,'Escalated',2],
+    ['roads','Broken footpath','Low',31,'Submitted',1],
+    ['electricity','Power outage','Medium',65,'Assigned',4],
+    ['streetlight','Dark public area','Medium',48,'Verified',6],
+    ['waste','Illegal dumping','High',70,'Accepted',5],
+    ['parks','Poor park maintenance','Low',27,'Closed',15],
+    ['drainage','Sewage overflow','High',81,'In Progress',3],
+    ['water','Low water pressure','Low',38,'Verified',4],
+    ['roads','Road obstruction','Medium',52,'Resolved',9],
+    ['electricity','Damaged electrical pole','High',77,'Escalated',3],
+    ['emergency','Flooding','Critical',98,'In Progress',1],
+    ['waste','Waste collection problem','Low',29,'Closed',10],
+    ['streetlight','Broken streetlight','Low',33,'Resolved',7],
+    ['parks','Damaged park equipment','Low',25,'Submitted',2],
+  ];
+  const center = {lat:13.06, lng:80.24};
+  templates.forEach((t,i)=>{
+    const [categoryId, type, severity, priorityHint, status, daysAgo] = t;
+    const cat = catById(categoryId);
+    const createdAt = Date.now() - daysAgo*86400000 - Math.random()*7200000;
+    const location = randLoc(center);
+    const dept = routeDepartment(categoryId);
+    const c = {
+      id: `CIV-2026-${String(i+1).padStart(5,'0')}`,
+      categoryId, categoryName: cat.name, type, severity,
+      description: demoDescription(type),
+      images: [1,2].slice(0, 1+Math.floor(Math.random()*2)),
+      location, ward: nearestWard(location),
+      department: dept,
+      officer: OFFICERS[dept],
+      citizen: randCitizen(),
+      createdAt,
+      status,
+      supporters: Math.floor(Math.random()*18)+ (status==='Escalated'?8:0),
+      verification: status==='Escalated' || status==='Critical' ? 'VERIFIED' : (Math.random()<0.85?'VERIFIED':'REQUIRES MANUAL VERIFICATION'),
+      history: buildHistory(status, createdAt, dept),
+      feedback: status==='Resolved'||status==='Closed' ? {rating: 3+Math.floor(Math.random()*3), comment:'Issue was addressed satisfactorily.'} : null,
+      escalated: status==='Escalated',
+      duplicateOf: null,
+      aiConfidence: 78+Math.floor(Math.random()*20),
+    };
+    DB.complaints.push(c);
+  });
+  DB.complaints.forEach(c=>{ c.priority = computePriority(c); c.priorityLabel = priorityLabel(c.priority); });
+}
+function demoDescription(type){
+  const map = {
+    'Pothole':'Large pothole has formed near the junction, causing traffic slowdown and risk to two-wheelers.',
+    'Garbage accumulation':'Garbage has been piling up on the street corner for several days, causing bad odour.',
+    'Water leakage':'Continuous water leakage from an underground pipe is flooding the side of the road.',
+    'Electrical hazard':'An exposed live wire is hanging low near the footpath, posing a serious danger to pedestrians.',
+    'Blocked drain':'Storm water drain is blocked with debris causing water to stagnate.',
+    'Streetlight not working':'Streetlight has been non-functional for over a week, making the stretch unsafe at night.',
+  };
+  return map[type] || `Reported issue: ${type}. Requires attention from the concerned department.`;
+}
+function buildHistory(status, createdAt, dept){
+  const stages = ['Submitted','AI Verification','Verified','Assigned','Accepted','In Progress','Resolved','Citizen Confirmation','Closed'];
+  const idx = {
+    'Submitted':0,'Verified':2,'Assigned':3,'Accepted':4,'In Progress':5,'Resolved':6,'Closed':8,'Escalated':5,
+  }[status] ?? 0;
+  const hist = [];
+  let t = createdAt;
+  for(let i=0;i<=idx;i++){
+    hist.push({stage:stages[i], ts:t, note:stageNote(stages[i], dept)});
+    t += (2+Math.random()*10)*3600000;
+  }
+  if(status==='Escalated'){ hist.push({stage:'Escalated', ts:t, note:'Deadline exceeded — automatically escalated to Higher Authority.'}); }
+  return hist;
+}
+function stageNote(stage, dept){
+  const m = {
+    'Submitted':'Complaint received from citizen application.',
+    'AI Verification':'Automated verification pipeline processed submitted evidence.',
+    'Verified':'Report verified and evidence found consistent.',
+    'Assigned':`Routed to ${dept} based on category and jurisdiction.`,
+    'Accepted':`${dept} accepted the complaint for action.`,
+    'In Progress':'Field team dispatched and work has commenced.',
+    'Resolved':'Issue marked resolved with supporting after-images.',
+    'Citizen Confirmation':'Awaiting citizen confirmation of resolution.',
+    'Closed':'Citizen confirmed resolution — complaint closed.',
+  };
+  return m[stage] || '';
+}
+seedDemoData();
+
+/* seed notifications */
+function seedNotifications(){
+  const recent = [...DB.complaints].sort((a,b)=>b.createdAt-a.createdAt).slice(0,8);
+  recent.forEach(c=>{
+    DB.notifications.push({
+      id: uid('N'), ts: c.createdAt + 3600000, unread:false,
+      icon: c.status==='Escalated'?'esc':'bell',
+      title: `${c.id} — ${notifTitleFor(c.status)}`,
+      sub: `${c.type} · ${c.ward}`,
+      audience:'all'
+    });
+  });
+}
+function notifTitleFor(status){
+  return {
+    'Submitted':'Complaint submitted successfully','Verified':'Complaint verified','Assigned':'Department assigned',
+    'Accepted':'Authority accepted your complaint','In Progress':'Work has started','Resolved':'Complaint resolved',
+    'Escalated':'Complaint escalated due to delay','Closed':'Complaint closed',
+  }[status] || 'Status updated';
+}
+seedNotifications();
+
+/* performance computation per department */
+function computePerformance(){
+  const depts = {};
+  DB.complaints.forEach(c=>{
+    if(!depts[c.department]) depts[c.department] = {dept:c.department, total:0, resolved:0, escalated:0, onTime:0, resTimes:[], respTimes:[], ratings:[]};
+    const d = depts[c.department];
+    d.total++;
+    if(c.status==='Resolved'||c.status==='Closed') d.resolved++;
+    if(c.status==='Escalated'||c.escalated) d.escalated++;
+    const hLeft = hoursLeft(c);
+    if((c.status==='Resolved'||c.status==='Closed') && !c.escalated) d.onTime++;
+    d.resTimes.push(2+Math.random()*40);
+    d.respTimes.push(0.5+Math.random()*6);
+    if(c.feedback) d.ratings.push(c.feedback.rating);
+  });
+  Object.values(depts).forEach(d=>{
+    d.resolutionRate = Math.round((d.resolved/d.total)*100);
+    d.escalationRate = Math.round((d.escalated/d.total)*100);
+    d.avgResponse = (d.respTimes.reduce((a,b)=>a+b,0)/d.respTimes.length).toFixed(1);
+    d.avgResolution = (d.resTimes.reduce((a,b)=>a+b,0)/d.resTimes.length).toFixed(1);
+    d.avgRating = d.ratings.length ? (d.ratings.reduce((a,b)=>a+b,0)/d.ratings.length).toFixed(1) : '—';
+    const deadlineAdherence = Math.max(0,100-d.escalationRate*1.4);
+    d.score = Math.round(d.resolutionRate*0.35 + deadlineAdherence*0.3 + (100-d.escalationRate)*0.2 + (d.ratings.length? d.avgRating*20*0.15 : 12));
+    d.score = Math.min(99, Math.max(38, d.score));
+    d.badges = [];
+    if(d.avgResponse < 2.2) d.badges.push('Fast Responder');
+    if(d.resolutionRate >= 60) d.badges.push('High Resolution');
+    if(d.escalationRate <= 15) d.badges.push('Deadline Champion');
+    if(d.ratings.length && d.avgRating >= 4) d.badges.push('Citizen Satisfaction');
+  });
+  const arr = Object.values(depts).sort((a,b)=>b.score-a.score);
+  if(arr[0]) arr[0].badges.push('Best Performing Department');
+  return arr;
+}
+
+/* ============================================================
+   APP STATE
+   ============================================================ */
+const S = {
+  authed:false,
+  role:null, // citizen | officer | admin | authority
+  user:null,
+  route:'home',
+  loginStep:'role', // role -> credentials -> otp -> done
+  loginRole:'citizen',
+  reportDraft:null,
+  votedIds:new Set(),
+  modal:null,
+  mapFilter:{category:'all', severity:'all'},
+  adminTab:'overview',
+};
+
+function render(){ document.getElementById('app').innerHTML = ''; document.getElementById('app').appendChild(RootView()); lucideFix(); }
+function lucideFix(){} // placeholder if icon lib swapped later
+
+function go(route){ S.route = route; render(); window.scrollTo(0,0); }
+function setModal(m){ S.modal = m; render(); }
+
+/* ============================================================
+   ROOT VIEW
+   ============================================================ */
+function RootView(){
+  const wrap = document.createElement('div');
+  if(!S.authed){ wrap.appendChild(LoginView()); return wrap; }
+
+  if(S.role==='citizen'){
+    wrap.appendChild(CitizenShell());
+  } else {
+    wrap.appendChild(StaffShell());
+  }
+  if(S.modal){ wrap.appendChild(ModalHost()); }
+  return wrap;
+}
+
+/* ============================================================
+   LOGIN
+   ============================================================ */
+function LoginView(){
+  const el = document.createElement('div');
+  el.className='login-shell';
+  const roles = [
+    {id:'citizen', label:'Citizen', icon:'user', desc:'Report & track civic issues'},
+    {id:'officer', label:'Dept. / Field Officer', icon:'worker', desc:'Manage assigned complaints'},
+    {id:'admin', label:'Administrator', icon:'settings', desc:'City-wide oversight & config'},
+    {id:'authority', label:'Higher Authority', icon:'shield', desc:'Escalation & performance review'},
+  ];
+
+  if(S.loginStep==='role'){
+    el.innerHTML = `
+      <div class="login-card">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">
+          <div class="seal" style="width:42px;height:42px;font-size:16px;">SC</div>
+          <div>
+            <div class="display" style="font-size:20px;">SetuCivic</div>
+            <div class="small muted">Citizen-Driven Civic Issue Platform</div>
+          </div>
+        </div>
+        <div class="divider"></div>
+        <div class="eyebrow">Sign in as</div>
+        <div class="role-pick" id="role-pick"></div>
+        <button class="btn btn-primary btn-block" style="margin-top:18px;" id="continue-role">Continue ${icon('arrowRight',15)}</button>
+        <p class="small muted" style="margin-top:12px;text-align:center;">Role cannot be changed after registration. Prototype uses simulated OTP authentication.</p>
+      </div>`;
+    const pick = el.querySelector('#role-pick');
+    roles.forEach(r=>{
+      const b = document.createElement('button');
+      b.className = 'role-btn'+(S.loginRole===r.id?' active':'');
+      b.innerHTML = `<div class="rt">${icon(r.icon,15)} ${r.label}</div><div class="muted" style="margin-top:3px;">${r.desc}</div>`;
+      b.onclick = ()=>{ S.loginRole=r.id; render(); };
+      pick.appendChild(b);
+    });
+    el.querySelector('#continue-role').onclick = ()=>{ S.loginStep='credentials'; render(); };
+  }
+  else if(S.loginStep==='credentials'){
+    el.innerHTML = `
+      <div class="login-card">
+        <button class="btn-ghost small" id="back-role">${icon('chev',14)} Back</button>
+        <div class="eyebrow" style="margin-top:10px;">${labelForRole(S.loginRole)}</div>
+        <h2 style="margin-bottom:4px;">Sign in</h2>
+        <p class="small muted" style="margin-bottom:16px;">Enter your registered mobile number to receive a one-time password.</p>
+        <div class="field"><label class="f">Mobile number</label><input type="tel" id="mobile" placeholder="98xxxxxx10" value="9876543210"></div>
+        <button class="btn btn-amber btn-block" id="send-otp">Send OTP ${icon('send',14)}</button>
+        <p class="small muted" style="margin-top:14px;">By continuing you agree this is a demonstration prototype using simulated authentication.</p>
+      </div>`;
+    el.querySelector('#back-role').onclick=()=>{S.loginStep='role';render();};
+    el.querySelector('#send-otp').onclick=()=>{ S.loginStep='otp'; render(); toast('OTP sent (simulated): use 1234','default'); };
+  }
+  else if(S.loginStep==='otp'){
+    el.innerHTML = `
+      <div class="login-card">
+        <button class="btn-ghost small" id="back-cred">${icon('chev',14)} Back</button>
+        <h2 style="margin:10px 0 4px;">Verify OTP</h2>
+        <p class="small muted" style="margin-bottom:16px;">We sent a 4-digit code to your mobile (simulated). Enter <b>1234</b> to continue.</p>
+        <div class="otp-boxes" id="otp-boxes">
+          ${[0,1,2,3].map(i=>`<input maxlength="1" type="text" data-i="${i}">`).join('')}
+        </div>
+        <button class="btn btn-primary btn-block" style="margin-top:18px;" id="verify-otp">Verify & Continue</button>
+      </div>`;
+    const boxes = [...el.querySelectorAll('#otp-boxes input')];
+    boxes.forEach((b,i)=>{ b.oninput=()=>{ if(b.value && boxes[i+1]) boxes[i+1].focus(); }; });
+    el.querySelector('#back-cred').onclick=()=>{S.loginStep='credentials';render();};
+    el.querySelector('#verify-otp').onclick=()=>{
+      const code = boxes.map(b=>b.value).join('');
+      if(code !== '1234'){ toast('Incorrect OTP — try 1234','danger'); return; }
+      completeLogin();
+    };
+  }
+  return el;
+}
+function labelForRole(r){ return {citizen:'Citizen Login', officer:'Officer Login', admin:'Administrator Login', authority:'Higher Authority Login'}[r]; }
+function completeLogin(){
+  S.authed = true;
+  S.role = S.loginRole;
+  S.user = {
+    name: S.role==='citizen' ? 'Divya Ramesh' : S.role==='officer' ? 'S. Kannan' : S.role==='admin' ? 'City Admin' : 'Regional Commissioner',
+    phone:'+91 98765 43210',
+    role:S.role,
+    id: uid('USR'),
+    ward:'Ward 27 — T. Nagar',
+  };
+  S.route = S.role==='citizen' ? 'home' : 'dashboard';
+  render();
+  toast(`Welcome, ${S.user.name.split(' ')[0]}`,'success');
+}
+function logout(){ S.authed=false; S.loginStep='role'; S.route='home'; S.modal=null; render(); }
+
+/* ============================================================
+   CITIZEN SHELL
+   ============================================================ */
+function CitizenShell(){
+  const wrap = document.createElement('div');
+  wrap.className='mobile-shell';
+  wrap.appendChild(TopBar(true));
+  const main = document.createElement('div');
+  main.className='main mobile-main';
+  main.appendChild(CitizenRoute());
+  wrap.appendChild(main);
+  wrap.appendChild(BottomNav());
+  return wrap;
+}
+function CitizenRoute(){
+  switch(S.route){
+    case 'home': return CitizenHome();
+    case 'report': return ReportFlow();
+    case 'mine': return MyComplaints();
+    case 'nearby': return NearbyMap();
+    case 'profile': return ProfileView();
+    case 'complaint-detail': return ComplaintDetail(S._activeComplaintId, true);
+    case 'notifications': return NotificationsView();
+    default: return CitizenHome();
+  }
+}
+function TopBar(mobile){
+  const bar = document.createElement('div');
+  bar.className='topbar';
+  const unread = DB.notifications.filter(n=>n.unread).length;
+  bar.innerHTML = `
+    <div class="brand">
+      <div class="seal">SC</div>
+      <div class="brand-text"><div class="t1">SetuCivic</div><div class="t2">${mobile?'Citizen App':'Governance Console'}</div></div>
+    </div>
+    <div class="topbar-right">
+      <span class="role-chip">${S.user.role}</span>
+      <button class="icon-btn" id="notif-btn">${icon('bell',18)}${unread?`<span class="badge-dot">${unread}</span>`:''}</button>
+      <button class="icon-btn" id="logout-btn">${icon('logout',18)}</button>
+    </div>`;
+  bar.querySelector('#notif-btn').onclick = ()=>{ if(S.role==='citizen'){go('notifications');} else { setModal({type:'notifications'}); } };
+  bar.querySelector('#logout-btn').onclick = logout;
+  return bar;
+}
+function BottomNav(){
+  const nav = document.createElement('div'); nav.className='bottom-nav';
+  const items = [
+    {r:'home', label:'Home', ic:'home'},
+    {r:'nearby', label:'Nearby', ic:'map'},
+    {r:'report', label:'', ic:'report', fab:true},
+    {r:'mine', label:'My Issues', ic:'list'},
+    {r:'profile', label:'Profile', ic:'user'},
+  ];
+  items.forEach(it=>{
+    const b = document.createElement('button');
+    b.className='bn-item'+(S.route===it.r?' active':'');
+    if(it.fab){ b.innerHTML = `<div class="fab-circle">${icon('report',20)}</div>`; }
+    else { b.innerHTML = `${icon(it.ic,20)}<span>${it.label}</span>`; }
+    b.onclick=()=>go(it.r);
+    nav.appendChild(b);
+  });
+  return nav;
+}
+
+function CitizenHome(){
+  const el = document.createElement('div');
+  el.style.padding = '16px';
+  const myComplaints = DB.complaints.filter(c=>c.citizen===S.user.name);
+  const stats = {
+    total: myComplaints.length || 6,
+    resolved: myComplaints.filter(c=>c.status==='Resolved'||c.status==='Closed').length || 3,
+    progress: myComplaints.filter(c=>c.status==='In Progress'||c.status==='Assigned'||c.status==='Accepted').length || 2,
+  };
+  el.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+      <div>
+        <div class="small muted">Good day,</div>
+        <div class="display" style="font-size:19px;">${S.user.name.split(' ')[0]} 👋</div>
+      </div>
+      <div class="avatar">${S.user.name[0]}</div>
+    </div>
+
+    <button class="card card-hover" id="emergency-btn" style="width:100%;text-align:left;padding:14px 16px;border-color:var(--red);background:linear-gradient(90deg,#FBE7E5,#fff);display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+      <div class="emoji-badge" style="background:var(--red);color:#fff;">${icon('alert',20)}</div>
+      <div style="flex:1;">
+        <div style="font-weight:700;color:var(--red);">Emergency Assistance</div>
+        <div class="small muted">Flooding, hazards, disasters — get immediate priority routing</div>
+      </div>
+      ${icon('chev',16)}
+    </button>
+
+    <div class="grid grid-3" style="margin-bottom:16px;">
+      <div class="card kpi accent-navy"><div class="label">Reported</div><div class="value">${stats.total}</div></div>
+      <div class="card kpi accent-amber"><div class="label">In Progress</div><div class="value">${stats.progress}</div></div>
+      <div class="card kpi accent-teal"><div class="label">Resolved</div><div class="value">${stats.resolved}</div></div>
+    </div>
+
+    <div class="eyebrow">Report an issue</div>
+    <div class="cat-grid" id="home-cats" style="margin-bottom:18px;"></div>
+
+    <div class="flex items-center justify-between" style="margin-bottom:8px;">
+      <div class="eyebrow" style="margin-bottom:0;">Nearby verified issues</div>
+      <button class="btn-ghost small" id="see-all-nearby">See map</button>
+    </div>
+    <div id="home-nearby-list" style="display:flex;flex-direction:column;gap:10px;"></div>
+  `;
+  const cg = el.querySelector('#home-cats');
+  CATEGORIES.slice(0,8).forEach(c=>{
+    const t = document.createElement('button');
+    t.className='cat-tile';
+    t.innerHTML = `${icon(c.icon,20)}<span>${c.name.split(' ')[0]}</span>`;
+    t.onclick = ()=>{ S.reportDraft = newDraft(c.id); go('report'); };
+    cg.appendChild(t);
+  });
+  el.querySelector('#emergency-btn').onclick = ()=> setModal({type:'emergency'});
+  el.querySelector('#see-all-nearby').onclick = ()=> go('nearby');
+
+  const list = el.querySelector('#home-nearby-list');
+  const nearby = [...DB.complaints].filter(c=>c.verification==='VERIFIED').sort((a,b)=>b.supporters-a.supporters).slice(0,4);
+  nearby.forEach(c=> list.appendChild(ComplaintCard(c)));
+  return el;
+}
+
+function ComplaintCard(c, opts={}){
+  const card = document.createElement('div');
+  card.className='card card-hover pad';
+  card.style.cursor='pointer';
+  const voted = S.votedIds.has(c.id);
+  card.innerHTML = `
+    <div class="flex items-center justify-between" style="margin-bottom:8px;">
+      <span class="stamp" style="transform:rotate(0);font-size:11px;padding:3px 8px;">${c.id}</span>
+      <span class="chip ${chipClassForStatus(c.status)}">${c.status}</span>
+    </div>
+    <div style="font-weight:700;font-size:14px;margin-bottom:2px;">${c.type}</div>
+    <div class="small muted" style="margin-bottom:8px;">${icon('pin',12)} ${c.ward}</div>
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-8">
+        <span class="chip chip-${c.severity.toLowerCase()}">${c.severity}</span>
+        <span class="small muted">${timeAgo(c.createdAt)}</span>
+      </div>
+      <button class="btn btn-sm ${voted?'btn-outline':'btn-amber'}" data-vote="${c.id}">${icon('vote',13)} ${c.supporters}${voted?' ✓':''}</button>
+    </div>`;
+  card.onclick=(e)=>{ if(e.target.closest('[data-vote]')) return; S._activeComplaintId=c.id; go('complaint-detail'); };
+  card.querySelector('[data-vote]').onclick=(e)=>{
+    e.stopPropagation();
+    if(S.votedIds.has(c.id)){ toast('You already supported this complaint','warn'); return; }
+    c.supporters++; S.votedIds.add(c.id); c.priority=computePriority(c); c.priorityLabel=priorityLabel(c.priority);
+    toast('Support added — priority score updated','success'); render();
+  };
+  return card;
+}
+
+/* ---------------- REPORT FLOW ---------------- */
+function newDraft(categoryId){
+  return {
+    step:1, categoryId: categoryId||null, type:null, description:'', images:[], video:false,
+    location: randLoc({lat:13.06,lng:80.24}), manualPin:false, remarks:'',
+  };
+}
+function ReportFlow(){
+  if(!S.reportDraft) S.reportDraft = newDraft();
+  const d = S.reportDraft;
+  const el = document.createElement('div');
+  el.style.padding='16px';
+  const totalSteps = 5;
+  el.innerHTML = `<div class="page-head" style="margin-bottom:8px;"><div><div class="eyebrow">Report a civic issue</div><h1 style="font-size:19px;">Step ${d.step} of ${totalSteps}</h1></div></div>
+  <div class="stepper">${Array.from({length:totalSteps}).map((_,i)=>`<div class="step-dot ${i+1<d.step?'done':i+1===d.step?'current':''}"></div>`).join('')}</div>
+  <div id="step-body"></div>`;
+  const body = el.querySelector('#step-body');
+  if(d.step===1) body.appendChild(StepCategory(d));
+  if(d.step===2) body.appendChild(StepDetails(d));
+  if(d.step===3) body.appendChild(StepEvidence(d));
+  if(d.step===4) body.appendChild(StepLocation(d));
+  if(d.step===5) body.appendChild(StepReviewSubmit(d));
+  return el;
+}
+function StepNav(d, canNext, onNext, backLabel='Back'){
+  const w = document.createElement('div');
+  w.style.cssText='display:flex;gap:10px;margin-top:18px;';
+  if(d.step>1){
+    const b = document.createElement('button'); b.className='btn btn-outline'; b.textContent=backLabel;
+    b.onclick=()=>{ d.step--; go('report'); };
+    w.appendChild(b);
+  }
+  const n = document.createElement('button'); n.className='btn btn-primary'; n.style.flex='1';
+  n.textContent = d.step<5 ? 'Continue' : 'Submit Complaint';
+  n.disabled = !canNext;
+  n.onclick = onNext;
+  w.appendChild(n);
+  return w;
+}
+function StepCategory(d){
+  const w = document.createElement('div');
+  const card = document.createElement('div'); card.className='card pad';
+  card.innerHTML = `<label class="f">Select issue category</label><div class="cat-grid" id="cg" style="margin-bottom:16px;"></div>
+  <div id="type-section" class="hidden"><label class="f">Specific issue type</label><div class="tag-row" id="type-list"></div></div>`;
+  w.appendChild(card);
+  const cg = card.querySelector('#cg');
+  CATEGORIES.forEach(c=>{
+    const t = document.createElement('button'); t.className='cat-tile'+(d.categoryId===c.id?' selected':'');
+    t.innerHTML=`${icon(c.icon,20)}<span>${c.name.split(' ')[0]}</span>`;
+    t.onclick=()=>{ d.categoryId=c.id; d.type=null; go('report'); };
+    cg.appendChild(t);
+  });
+  if(d.categoryId){
+    card.querySelector('#type-section').classList.remove('hidden');
+    const tl = card.querySelector('#type-list');
+    catById(d.categoryId).types.forEach(ty=>{
+      const b=document.createElement('button'); b.className='btn btn-sm '+(d.type===ty?'btn-amber':'btn-outline');
+      b.textContent=ty; b.onclick=()=>{ d.type=ty; go('report'); };
+      tl.appendChild(b);
+    });
+  }
+  w.appendChild(StepNav(d, !!(d.categoryId && d.type), ()=>{ d.step=2; go('report'); }));
+  return w;
+}
+function StepDetails(d){
+  const w=document.createElement('div');
+  const card=document.createElement('div'); card.className='card pad';
+  card.innerHTML=`
+    <div class="hint-banner" style="margin-bottom:14px;">${icon('info',15)}<span><b>${catById(d.categoryId).name}</b> → ${d.type}</span></div>
+    <div class="field"><label class="f">Describe the issue</label><textarea id="desc" placeholder="Explain what you observed, how long it has persisted, and who it affects...">${d.description}</textarea></div>
+    <div class="field"><label class="f">Additional remarks (optional)</label><input type="text" id="remarks" value="${d.remarks}" placeholder="e.g. worse during rain, near school zone"></div>`;
+  w.appendChild(card);
+  w.appendChild(StepNav(d, d.description.trim().length>=10, ()=>{
+    d.description = card.querySelector('#desc').value;
+    d.remarks = card.querySelector('#remarks').value;
+    if(d.description.trim().length<10){ toast('Please add a slightly more detailed description','warn'); return; }
+    d.step=3; go('report');
+  }));
+  card.querySelector('#desc').oninput=(e)=>d.description=e.target.value;
+  return w;
+}
+function StepEvidence(d){
+  const w=document.createElement('div');
+  const card=document.createElement('div'); card.className='card pad';
+  card.innerHTML=`
+    <label class="f">Upload photo evidence</label>
+    <div class="upload-box" id="upload-zone" style="margin-bottom:12px;cursor:pointer;">
+      ${icon('camera',26)}<div style="margin-top:6px;font-weight:600;">Tap to capture / upload images</div>
+      <div class="small">Multiple images supported · Prototype uses placeholder imagery</div>
+    </div>
+    <div class="tag-row" id="thumbs" style="margin-bottom:10px;"></div>
+    <label class="f" style="display:flex;align-items:center;gap:8px;"><input type="checkbox" id="video-chk" ${d.video?'checked':''} style="width:auto;"> Add optional video clip</label>
+    <div class="divider"></div>
+    <div id="ai-preview"></div>`;
+  w.appendChild(card);
+  const thumbs = card.querySelector('#thumbs');
+  function renderThumbs(){
+    thumbs.innerHTML='';
+    d.images.forEach((im,i)=>{
+      const t=document.createElement('div'); t.className='upload-thumb';
+      t.innerHTML = icon('image',22)+`<button style="position:absolute;top:-6px;right:-6px;width:18px;height:18px;background:var(--red);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;">${icon('x',10)}</button>`;
+      t.querySelector('button').onclick=()=>{ d.images.splice(i,1); go('report'); };
+      thumbs.appendChild(t);
+    });
+  }
+  renderThumbs();
+  card.querySelector('#upload-zone').onclick=()=>{ d.images.push(d.images.length+1); go('report'); };
+  card.querySelector('#video-chk').onchange=(e)=>d.video=e.target.checked;
+
+  if(d.images.length){
+    const ai = AI_SERVICE.classifyImage(d.categoryId, d.type);
+    d._aiResult = ai;
+    card.querySelector('#ai-preview').innerHTML = `
+      <div class="hint-banner" style="align-items:flex-start;">
+        ${icon('spark',16)}
+        <div style="flex:1;">
+          <div class="flex items-center justify-between" style="margin-bottom:6px;">
+            <b>AI Image Analysis</b><span class="mock-tag">Simulated</span>
+          </div>
+          <div class="ai-flow">
+            <span class="node">Image</span><span class="arrow">→</span>
+            <span class="node">AI Analysis</span><span class="arrow">→</span>
+            <span class="node">Detected Issue</span><span class="arrow">→</span>
+            <span class="node">Confidence</span><span class="arrow">→</span>
+            <span class="node">Severity</span>
+          </div>
+          <div style="margin-top:10px;font-size:13px;">
+            Detected: <b>${ai.label}</b><br>
+            Confidence: <b>${ai.confidence}%</b><br>
+            Suggested severity: <span class="chip chip-${ai.severity.toLowerCase()}" style="margin-left:2px;">${ai.severity}</span>
+          </div>
+        </div>
+      </div>`;
+  } else {
+    card.querySelector('#ai-preview').innerHTML = `<div class="warn-banner">${icon('alert',15)}<span>At least one image is recommended — reports with evidence are verified faster and reach a "VERIFIED" state automatically more often.</span></div>`;
+  }
+  w.appendChild(StepNav(d, true, ()=>{ d.step=4; go('report'); }));
+  return w;
+}
+function StepLocation(d){
+  const w=document.createElement('div');
+  const card=document.createElement('div'); card.className='card pad';
+  const addr = `Near ${d.location.lat.toFixed(4)}, ${d.location.lng.toFixed(4)} · ${nearestWard(d.location)}`;
+  card.innerHTML=`
+    <label class="f">Issue location</label>
+    <div class="map-box" style="height:220px;margin-bottom:12px;">
+      <div class="map-pin high" style="left:50%;top:50%;"><div class="dot"></div></div>
+      <div class="map-legend"><span>${icon('pin',12)} GPS captured</span></div>
+    </div>
+    <div class="hint-banner" style="margin-bottom:12px;">${icon('pin',15)}<span><b>Current location:</b> ${addr}</span></div>
+    <button class="btn btn-outline btn-block" id="manual-pin">${icon('map',15)} Adjust pin manually on map</button>
+    <p class="small muted" style="margin-top:8px;">${d.manualPin?'Manual pin adjustment applied.':'Using device GPS (simulated — real GPS API integrates here).'}</p>`;
+  w.appendChild(card);
+  card.querySelector('#manual-pin').onclick=()=>{ d.manualPin=true; d.location=randLoc({lat:13.06,lng:80.24}); toast('Pin adjusted','default'); go('report'); };
+  w.appendChild(StepNav(d, true, ()=>{ d.step=5; go('report'); }));
+  return w;
+}
+function StepReviewSubmit(d){
+  const w=document.createElement('div');
+  const cat = catById(d.categoryId);
+  const dept = routeDepartment(d.categoryId);
+  const ai = d._aiResult || AI_SERVICE.classifyImage(d.categoryId, d.type);
+  const sevAssess = AI_SERVICE.assessSeverity(d.categoryId, d.type, ai);
+  const dup = AI_SERVICE.findDuplicate({categoryId:d.categoryId, id:'draft', location:d.location}, DB.complaints);
+
+  const card=document.createElement('div'); card.className='card pad'; card.style.marginBottom='14px';
+  card.innerHTML=`
+    <label class="f">Review before submitting</label>
+    <table style="font-size:13px;">
+      <tr><td class="muted" style="width:110px;">Category</td><td><b>${cat.name}</b></td></tr>
+      <tr><td class="muted">Issue type</td><td>${d.type}</td></tr>
+      <tr><td class="muted">Description</td><td>${d.description}</td></tr>
+      <tr><td class="muted">Location</td><td>${nearestWard(d.location)}</td></tr>
+      <tr><td class="muted">Photos</td><td>${d.images.length} attached</td></tr>
+      <tr><td class="muted">Auto severity</td><td><span class="chip chip-${sevAssess.severity.toLowerCase()}">${sevAssess.severity}</span></td></tr>
+      <tr><td class="muted">Auto-routed to</td><td><b>${dept}</b></td></tr>
+    </table>`;
+  w.appendChild(card);
+
+  if(dup){
+    const dc = document.createElement('div'); dc.className='card pad'; dc.style.marginBottom='14px'; dc.style.borderColor='var(--amber)';
+    dc.innerHTML=`
+      <div class="flex items-center gap-8" style="margin-bottom:8px;"><span class="mock-tag" style="background:var(--amber);color:var(--navy);">Duplicate check</span></div>
+      <b>Similar complaint found nearby</b>
+      <p class="small muted" style="margin:4px 0 10px;">Existing complaint <span class="mono">${dup.complaint.id}</span> is ${dup.distance} metres away and matches this category.</p>
+      <div class="flex gap-10">
+        <button class="btn btn-outline btn-sm" style="flex:1;" id="continue-new">Continue as new</button>
+        <button class="btn btn-amber btn-sm" style="flex:1;" id="support-existing">Support existing</button>
+      </div>`;
+    w.appendChild(dc);
+    dc.querySelector('#support-existing').onclick=()=>{
+      dup.complaint.supporters++;
+      dup.complaint.priority = computePriority(dup.complaint); dup.complaint.priorityLabel=priorityLabel(dup.complaint.priority);
+      toast(`Added your support to ${dup.complaint.id}`,'success');
+      S.reportDraft=null; S._activeComplaintId=dup.complaint.id; go('complaint-detail');
+    };
+    dc.querySelector('#continue-new').onclick=()=>{ dc.style.display='none'; w._forceNew=true; submitBtn.disabled=false; };
+  }
+
+  const verify = AI_SERVICE.verifyReport({hasImage:d.images.length>0, description:d.description});
+  const vcard=document.createElement('div'); vcard.className='card pad'; vcard.style.marginBottom='14px';
+  const vClass = verify.status==='VERIFIED'?'hint-banner':verify.status==='SUSPICIOUS'?'danger-banner':'warn-banner';
+  vcard.innerHTML=`<div class="${vClass}">${icon('shield',15)}<div><b>${verify.status}</b>${verify.flags.length?'<br><span class="small">'+verify.flags.join(' · ')+'</span>':''}<div class="small" style="margin-top:4px;"><span class="mock-tag">Simulated verification</span></div></div></div>`;
+  w.appendChild(vcard);
+
+  const submitBtn = document.createElement('button');
+  submitBtn.className='btn btn-primary btn-block'; submitBtn.textContent='Submit Complaint';
+  submitBtn.disabled = !!dup;
+  submitBtn.onclick = ()=> submitComplaint(d, {ai, sevAssess, verify, dept});
+  const nav = document.createElement('div'); nav.style.cssText='display:flex;gap:10px;margin-top:6px;';
+  const back = document.createElement('button'); back.className='btn btn-outline'; back.textContent='Back'; back.onclick=()=>{ d.step=4; go('report'); };
+  nav.appendChild(back); nav.appendChild(submitBtn);
+  w.appendChild(nav);
+  return w;
+}
+function submitComplaint(d, ctx){
+  const now = Date.now();
+  const id = `CIV-2026-${String(DB.complaints.length+1).padStart(5,'0')}`;
+  const c = {
+    id, categoryId:d.categoryId, categoryName:catById(d.categoryId).name, type:d.type,
+    description:d.description, images:d.images, location:d.location, ward:nearestWard(d.location),
+    department:ctx.dept, officer:OFFICERS[ctx.dept], citizen:S.user.name, createdAt:now,
+    status: ctx.verify.status==='VERIFIED' ? 'Verified' : (ctx.verify.status==='SUSPICIOUS'?'Suspicious':'Requires Manual Verification'),
+    supporters:1, verification:ctx.verify.status, verificationFlags:ctx.verify.flags,
+    history:[
+      {stage:'Submitted', ts:now, note:'Complaint received from citizen application.'},
+      {stage:'AI Verification', ts:now+60000, note:`Automated pipeline: ${ctx.verify.status}`},
+    ],
+    feedback:null, escalated:false, duplicateOf:null, aiConfidence:ctx.ai.confidence, severity:ctx.sevAssess.severity, severityReason:ctx.sevAssess.reason,
+  };
+  if(ctx.verify.status==='VERIFIED'){
+    c.history.push({stage:'Verified', ts:now+120000, note:'Report verified — evidence consistent.'});
+    c.history.push({stage:'Assigned', ts:now+180000, note:`Automatically routed to ${ctx.dept} based on category and jurisdiction.`});
+    c.status='Assigned';
+  }
+  c.priority = computePriority(c); c.priorityLabel = priorityLabel(c.priority);
+  DB.complaints.unshift(c);
+  DB.notifications.unshift({id:uid('N'), ts:now, unread:true, icon:'check', title:`${c.id} submitted successfully`, sub:`${c.type} · ${c.ward}`, audience:'all'});
+  if(c.status==='Assigned'){
+    DB.notifications.unshift({id:uid('N'), ts:now+1000, unread:true, icon:'dept', title:`Routed to ${ctx.dept}`, sub:c.id, audience:'all'});
+  }
+  S.reportDraft=null;
+  toast('Complaint submitted · ID '+c.id,'success');
+  S._activeComplaintId = c.id;
+  go('complaint-detail');
+}
+
+function MyComplaints(){
+  const el=document.createElement('div'); el.style.padding='16px';
+  let mine = DB.complaints.filter(c=>c.citizen===S.user.name);
+  if(mine.length<3){ mine = [...mine, ...DB.complaints.slice(0,6)]; } // ensure demo has content
+  el.innerHTML = `<div class="eyebrow">Tracking</div><h1 style="font-size:19px;margin-bottom:14px;">My Complaints</h1>
+  <div id="mine-list" style="display:flex;flex-direction:column;gap:10px;"></div>`;
+  const list = el.querySelector('#mine-list');
+  if(!mine.length){ list.innerHTML = EmptyState('No complaints yet','Report your first civic issue to see it tracked here.'); }
+  mine.forEach(c=> list.appendChild(ComplaintCard(c)));
+  return el;
+}
+function EmptyState(title,sub){
+  return `<div class="card pad" style="text-align:center;padding:34px 16px;">${icon('search',26)}<div style="font-weight:700;margin-top:8px;">${title}</div><div class="small muted">${sub}</div></div>`;
+}
+
+function NearbyMap(){
+  const el=document.createElement('div'); el.style.padding='16px';
+  el.innerHTML=`<div class="eyebrow">Community</div><h1 style="font-size:19px;margin-bottom:10px;">Nearby Issues</h1>
+  <div class="map-box" style="height:230px;margin-bottom:14px;" id="nmap"></div>
+  <div id="nearby-list" style="display:flex;flex-direction:column;gap:10px;"></div>`;
+  const map = el.querySelector('#nmap');
+  const verified = DB.complaints.filter(c=>c.verification==='VERIFIED'||c.status!=='Suspicious').slice(0,16);
+  const lats = verified.map(c=>c.location.lat), lngs = verified.map(c=>c.location.lng);
+  const minLat=Math.min(...lats), maxLat=Math.max(...lats), minLng=Math.min(...lngs), maxLng=Math.max(...lngs);
+  verified.forEach(c=>{
+    const x = 8 + ((c.location.lng-minLng)/(maxLng-minLng||1))*84;
+    const y = 8 + (1-(c.location.lat-minLat)/(maxLat-minLat||1))*84;
+    const pin = document.createElement('div');
+    pin.className='map-pin '+c.severity.toLowerCase();
+    pin.style.left=x+'%'; pin.style.top=y+'%';
+    pin.innerHTML=`<div class="dot"></div><div class="pin-label">${c.type}</div>`;
+    pin.onclick=()=>{ S._activeComplaintId=c.id; go('complaint-detail'); };
+    map.appendChild(pin);
+  });
+  map.innerHTML += `<div class="map-legend"><span><i style="background:var(--sev-critical);"></i>Critical</span><span><i style="background:var(--sev-high);"></i>High</span><span><i style="background:var(--sev-medium);"></i>Medium</span><span><i style="background:var(--sev-low);"></i>Low</span></div>`;
+  const list = el.querySelector('#nearby-list');
+  verified.forEach(c=> list.appendChild(ComplaintCard(c)));
+  return el;
+}
+
+function ProfileView(){
+  const el=document.createElement('div'); el.style.padding='16px';
+  const mine = DB.complaints.filter(c=>c.citizen===S.user.name);
+  el.innerHTML=`
+    <div class="flex items-center gap-14" style="margin-bottom:18px;">
+      <div class="avatar" style="width:56px;height:56px;font-size:20px;">${S.user.name[0]}</div>
+      <div><div style="font-weight:700;font-size:16px;">${S.user.name}</div><div class="small muted">${S.user.phone}</div><div class="small muted">${S.user.ward}</div></div>
+    </div>
+    <div class="grid grid-3" style="margin-bottom:16px;">
+      <div class="card kpi accent-navy"><div class="label">Reported</div><div class="value">${mine.length||6}</div></div>
+      <div class="card kpi accent-teal"><div class="label">Resolved</div><div class="value">${mine.filter(c=>c.status==='Resolved'||c.status==='Closed').length||3}</div></div>
+      <div class="card kpi accent-amber"><div class="label">Supports Given</div><div class="value">${S.votedIds.size}</div></div>
+    </div>
+    <div class="card pad" style="margin-bottom:12px;">
+      <div class="flex items-center justify-between" style="cursor:pointer;" data-item="account"><span>${icon('user',16)} Account details</span>${icon('chev',15)}</div>
+    </div>
+    <div class="card pad" style="margin-bottom:12px;">
+      <div class="flex items-center justify-between" style="cursor:pointer;" data-item="privacy"><span>${icon('shield',16)} Privacy & data</span>${icon('chev',15)}</div>
+    </div>
+    <div class="card pad" style="margin-bottom:16px;">
+      <div class="flex items-center justify-between" style="cursor:pointer;" data-item="help"><span>${icon('info',16)} Help & support</span>${icon('chev',15)}</div>
+    </div>
+    <button class="btn btn-outline btn-block" id="logout-2">${icon('logout',15)} Sign out</button>`;
+  el.querySelectorAll('[data-item]').forEach(n=>n.onclick=()=>toast('Prototype — full screen not implemented','default'));
+  el.querySelector('#logout-2').onclick=logout;
+  return el;
+}
+
+function NotificationsView(){
+  const el=document.createElement('div');
+  el.innerHTML=`<div style="padding:16px 16px 0;"><div class="eyebrow">Updates</div><h1 style="font-size:19px;margin-bottom:10px;">Notifications</h1></div>
+  <div class="card" style="margin:0 16px;border-radius:12px;" id="nlist"></div>`;
+  const list = el.querySelector('#nlist');
+  DB.notifications.slice(0,25).forEach(n=>{
+    const it=document.createElement('div'); it.className='notif-item'+(n.unread?' notif-unread':'');
+    it.innerHTML=`<div class="notif-ico">${icon(n.icon,16)}</div><div style="flex:1;"><div class="notif-text">${n.title}</div><div class="notif-sub">${n.sub}</div></div><div class="notif-time">${timeAgo(n.ts)}</div>`;
+    it.onclick=()=>{ n.unread=false; render(); };
+    list.appendChild(it);
+  });
+  return el;
+}
+
+/* ---------------- COMPLAINT DETAIL (shared citizen/staff) ---------------- */
+function ComplaintDetail(id, isCitizen){
+  const c = DB.complaints.find(x=>x.id===id);
+  const el = document.createElement('div');
+  el.style.padding = isCitizen ? '16px' : '0';
+  if(!c){ el.innerHTML = EmptyState('Complaint not found',''); return el; }
+  const deptOfficer = c.officer;
+  const hrsLeft = hoursLeft(c);
+  el.innerHTML = `
+    <button class="btn-ghost small" id="back-btn" style="margin-bottom:10px;">${icon('chev',14)} Back</button>
+    <div class="flex items-center justify-between" style="margin-bottom:10px;flex-wrap:wrap;gap:8px;">
+      <span class="stamp">${c.id}</span>
+      <span class="chip ${chipClassForStatus(c.status)}">${c.status}</span>
+    </div>
+    <h2 style="font-size:18px;margin-bottom:4px;">${c.type}</h2>
+    <div class="small muted" style="margin-bottom:14px;">${c.categoryName} · ${icon('pin',12)} ${c.ward} · Reported ${fmtDateTime(c.createdAt)}</div>
+
+    <div class="card pad" style="margin-bottom:14px;">
+      <div class="grid grid-2" style="gap:10px;">
+        <div><div class="small muted">Severity</div><span class="chip chip-${c.severity.toLowerCase()}" style="margin-top:4px;">${c.severity}</span></div>
+        <div><div class="small muted">Priority score</div><div style="font-weight:700;">${c.priority}/100 · ${c.priorityLabel}</div></div>
+        <div><div class="small muted">Assigned department</div><div style="font-weight:600;font-size:13px;">${c.department}</div></div>
+        <div><div class="small muted">Field officer</div><div style="font-weight:600;font-size:13px;">${deptOfficer||'Pending assignment'}</div></div>
+        <div><div class="small muted">Supporters</div><div style="font-weight:600;">${c.supporters} citizens</div></div>
+        <div><div class="small muted">Deadline</div><div style="font-weight:600;color:${hrsLeft<0?'var(--red)':hrsLeft<8?'var(--amber)':'var(--ink)'};">${hrsLeft<0?'Overdue':Math.round(hrsLeft)+'h remaining'}</div></div>
+      </div>
+    </div>
+
+    <div class="card pad" style="margin-bottom:14px;">
+      <div class="flex items-center justify-between" style="margin-bottom:8px;"><b style="font-size:13px;">Description</b></div>
+      <p class="small">${c.description}</p>
+      ${c.images && c.images.length ? `<div class="tag-row" style="margin-top:10px;">${c.images.map(()=>`<div class="upload-thumb">${icon('image',20)}</div>`).join('')}</div>`:''}
+    </div>
+
+    ${c.severityReason?`<div class="hint-banner" style="margin-bottom:14px;">${icon('spark',15)}<span><b>Why this severity:</b> ${c.severityReason} <span class="mock-tag">Simulated</span></span></div>`:''}
+
+    <div class="card pad" style="margin-bottom:14px;">
+      <b style="font-size:13px;">Status timeline</b>
+      <div class="timeline" style="margin-top:14px;">
+        ${c.history.map((h,i)=>`<div class="tl-item ${i<c.history.length-1?'done':'current'}">
+          <div class="tl-title">${h.stage}</div>
+          <div class="tl-meta">${fmtDateTime(h.ts)}</div>
+          <div class="tl-note">${h.note}</div>
+        </div>`).join('')}
+      </div>
+    </div>
+
+    ${(c.status==='Resolved' && isCitizen) ? FeedbackBlock(c) : ''}
+    ${c.feedback ? `<div class="card pad" style="margin-bottom:14px;"><b style="font-size:13px;">Citizen feedback</b><div class="flex items-center gap-8" style="margin-top:6px;">${'★'.repeat(c.feedback.rating)}${'☆'.repeat(5-c.feedback.rating)}</div><p class="small muted" style="margin-top:4px;">${c.feedback.comment}</p></div>` : ''}
+  `;
+  el.querySelector('#back-btn').onclick = ()=> go(isCitizen ? 'mine' : S.route);
+  if(c.status==='Resolved' && isCitizen){
+    setTimeout(()=>{
+      const yes = el.querySelector('#fb-yes'), no = el.querySelector('#fb-no');
+      if(yes) yes.onclick = ()=>{ submitFeedback(c, true); };
+      if(no) no.onclick = ()=>{ submitFeedback(c, false); };
+    },0);
+  }
+  return el;
+}
+function FeedbackBlock(c){
+  return `<div class="card pad" style="margin-bottom:14px;">
+    <b style="font-size:13px;">Was your issue resolved?</b>
+    <div class="flex gap-10" style="margin-top:10px;">
+      <button class="btn btn-amber btn-sm" style="flex:1;" id="fb-yes">${icon('check',13)} Yes, resolved</button>
+      <button class="btn btn-outline btn-sm" style="flex:1;" id="fb-no">Not resolved</button>
+    </div>
+  </div>`;
+}
+function submitFeedback(c, resolved){
+  if(resolved){
+    c.feedback = {rating:5, comment:'Confirmed resolved by citizen.'};
+    c.status='Closed';
+    c.history.push({stage:'Citizen Confirmation', ts:Date.now(), note:'Citizen confirmed the issue is resolved.'});
+    c.history.push({stage:'Closed', ts:Date.now()+1000, note:'Complaint closed.'});
+    toast('Thank you — complaint closed','success');
+  } else {
+    c.status='Reopened';
+    c.history.push({stage:'Reopened', ts:Date.now(), note:'Citizen reported issue as unresolved — reopened and department notified.'});
+    DB.notifications.unshift({id:uid('N'), ts:Date.now(), unread:true, icon:'esc', title:`${c.id} reopened by citizen`, sub:c.department, audience:'staff'});
+    toast('Complaint reopened — department notified','warn');
+  }
+  render();
+}
+
+/* ============================================================
+   STAFF SHELL (officer / admin / authority)
+   ============================================================ */
+function StaffShell(){
+  const wrap=document.createElement('div'); wrap.style.cssText='min-height:100vh;display:flex;flex-direction:column;';
+  wrap.appendChild(TopBar(false));
+  const layout=document.createElement('div'); layout.className='layout';
+  layout.appendChild(Sidebar());
+  const main=document.createElement('div'); main.className='main';
+  main.appendChild(StaffRoute());
+  layout.appendChild(main);
+  wrap.appendChild(layout);
+  return wrap;
+}
+function navItemsForRole(){
+  if(S.role==='officer') return [
+    {r:'dashboard', label:'Dashboard', ic:'grid'},
+    {r:'my-queue', label:'My Queue', ic:'list'},
+    {r:'field', label:'Field Updates', ic:'worker'},
+    {r:'map-staff', label:'Hotspot Map', ic:'map'},
+  ];
+  if(S.role==='admin') return [
+    {r:'dashboard', label:'Overview', ic:'grid'},
+    {r:'all-complaints', label:'All Complaints', ic:'list'},
+    {r:'map-staff', label:'Hotspot Map', ic:'map'},
+    {r:'departments', label:'Departments', ic:'dept'},
+    {r:'analytics', label:'Analytics', ic:'chart'},
+    {r:'config', label:'Configuration', ic:'settings'},
+  ];
+  return [ // authority
+    {r:'dashboard', label:'Overview', ic:'grid'},
+    {r:'escalations', label:'Escalations', ic:'esc'},
+    {r:'departments', label:'Performance', ic:'award'},
+    {r:'map-staff', label:'Hotspot Map', ic:'map'},
+  ];
+}
+function Sidebar(){
+  const sb=document.createElement('div'); sb.className='sidebar';
+  sb.innerHTML=`<div class="flex items-center gap-10" style="padding:6px 8px 12px;"><div class="avatar" style="background:var(--amber);color:var(--navy);">${S.user.name[0]}</div><div><div style="font-weight:700;font-size:13px;">${S.user.name}</div><div class="small" style="color:#9FB3B1;">${roleTitle(S.role)}</div></div></div>`;
+  const nav=document.createElement('div'); nav.className='sidebar-nav';
+  navItemsForRole().forEach(it=>{
+    const b=document.createElement('button'); b.className='snav-item'+(S.route===it.r?' active':'');
+    b.innerHTML=`${icon(it.ic,16)} ${it.label}`;
+    b.onclick=()=>go(it.r);
+    nav.appendChild(b);
+  });
+  sb.appendChild(nav);
+  const foot=document.createElement('div'); foot.className='sidebar-foot';
+  foot.innerHTML='SetuCivic Governance Console<br>Prototype build · Mock services active';
+  sb.appendChild(foot);
+  return sb;
+}
+function roleTitle(r){ return {officer:'Field / Dept Officer', admin:'Administrator', authority:'Higher Authority'}[r]; }
+function StaffRoute(){
+  if(S.role==='officer'){
+    if(S.route==='my-queue') return OfficerQueue();
+    if(S.route==='field') return FieldWorkerView();
+    if(S.route==='map-staff') return HotspotMap();
+    if(S.route==='complaint-detail') return StaffComplaintDetail(S._activeComplaintId);
+    return OfficerDashboard();
+  }
+  if(S.role==='admin'){
+    if(S.route==='all-complaints') return AllComplaintsTable();
+    if(S.route==='map-staff') return HotspotMap();
+    if(S.route==='departments') return DepartmentsView();
+    if(S.route==='analytics') return AnalyticsView();
+    if(S.route==='config') return ConfigView();
+    if(S.route==='complaint-detail') return StaffComplaintDetail(S._activeComplaintId);
+    return AdminDashboard();
+  }
+  // authority
+  if(S.route==='escalations') return EscalationsView();
+  if(S.route==='departments') return DepartmentsView(true);
+  if(S.route==='map-staff') return HotspotMap();
+  if(S.route==='complaint-detail') return StaffComplaintDetail(S._activeComplaintId);
+  return AuthorityDashboard();
+}
+
+/* ---------------- OFFICER DASHBOARD ---------------- */
+function myDeptComplaints(){
+  const dept = officerDept();
+  return DB.complaints.filter(c=>c.department===dept);
+}
+function officerDept(){ return 'Municipal Engineering Department'; }
+function OfficerDashboard(){
+  const el=document.createElement('div');
+  const list = myDeptComplaints();
+  const kpis = {
+    New: list.filter(c=>['Assigned','Verified'].includes(c.status)).length,
+    'High Priority': list.filter(c=>c.priorityLabel==='HIGH'||c.priorityLabel==='CRITICAL').length,
+    'In Progress': list.filter(c=>c.status==='In Progress').length,
+    Overdue: list.filter(c=>hoursLeft(c)<0 && !['Resolved','Closed'].includes(c.status)).length,
+  };
+  el.innerHTML = `<div class="page-head"><div><div class="eyebrow">${officerDept()}</div><h1>Officer Dashboard</h1><p>Simulate a real municipal caseload with live escalation tracking.</p></div>
+  <button class="btn btn-outline" id="sim-time">${icon('clock',15)} Simulate 6 hours passing</button></div>
+  <div class="grid grid-4" style="margin-bottom:18px;" id="kp"></div>
+  <div class="card">
+    <div class="pad" style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);"><b>Department queue</b><span class="small muted">${list.length} complaints</span></div>
+    <div class="table-wrap" id="table-host"></div>
+  </div>`;
+  const kp = el.querySelector('#kp');
+  const accents=['navy','amber','teal','red'];
+  Object.entries(kpis).forEach(([k,v],i)=>{
+    kp.innerHTML += `<div class="card kpi accent-${accents[i]}"><div class="label">${k}</div><div class="value">${v}</div></div>`;
+  });
+  el.querySelector('#table-host').appendChild(ComplaintTable(list.slice(0,12), true));
+  el.querySelector('#sim-time').onclick = ()=>{ simulateTimePass(6); toast('Simulated 6 hours — deadlines & escalations updated','warn'); render(); };
+  return el;
+}
+function ComplaintTable(list, actionable){
+  const wrap=document.createElement('div');
+  const t=document.createElement('table');
+  t.innerHTML = `<thead><tr><th>ID</th><th>Issue</th><th>Location</th><th>Priority</th><th>Severity</th><th>Citizen</th><th>Deadline</th><th>Status</th>${actionable?'<th>Action</th>':''}</tr></thead>`;
+  const tb=document.createElement('tbody');
+  list.forEach(c=>{
+    const hl = hoursLeft(c);
+    const tr=document.createElement('tr');
+    tr.innerHTML = `
+      <td><span class="mono small">${c.id}</span></td>
+      <td>${c.type}</td>
+      <td class="small">${c.ward}</td>
+      <td><b>${c.priority}</b> <span class="small muted">${c.priorityLabel}</span></td>
+      <td><span class="chip chip-${c.severity.toLowerCase()}">${c.severity}</span></td>
+      <td class="small">${c.citizen}</td>
+      <td class="small" style="color:${hl<0?'var(--red)':hl<8?'var(--amber)':'inherit'};">${['Resolved','Closed'].includes(c.status)?'—':(hl<0?'Overdue':Math.round(hl)+'h')}</td>
+      <td><span class="chip ${chipClassForStatus(c.status)}">${c.status}</span></td>
+      ${actionable?'<td></td>':''}`;
+    tr.style.cursor='pointer';
+    tr.onclick=(e)=>{ if(e.target.closest('button'))return; S._activeComplaintId=c.id; go('complaint-detail'); };
+    if(actionable){
+      const td = tr.lastElementChild;
+      const b=document.createElement('button'); b.className='btn btn-sm btn-outline'; b.textContent='Open'; b.onclick=(e)=>{e.stopPropagation(); S._activeComplaintId=c.id; go('complaint-detail');};
+      td.appendChild(b);
+    }
+    tb.appendChild(tr);
+  });
+  t.appendChild(tb);
+  wrap.appendChild(t);
+  return wrap;
+}
+function OfficerQueue(){
+  const el=document.createElement('div');
+  el.innerHTML=`<div class="page-head"><div><div class="eyebrow">Full queue</div><h1>My Queue</h1></div></div><div class="card"><div class="table-wrap" id="th"></div></div>`;
+  el.querySelector('#th').appendChild(ComplaintTable(myDeptComplaints(), true));
+  return el;
+}
+function FieldWorkerView(){
+  const el=document.createElement('div');
+  const assigned = myDeptComplaints().filter(c=>['Accepted','In Progress'].includes(c.status));
+  el.innerHTML=`<div class="page-head"><div><div class="eyebrow">On the ground</div><h1>Field Worker Module</h1><p>View assigned complaints, navigate, and log before/after work.</p></div></div>
+  <div class="grid grid-3" id="fw-list"></div>`;
+  const list = el.querySelector('#fw-list');
+  if(!assigned.length){ list.innerHTML = EmptyState('No active field jobs','Accepted complaints will appear here for field execution.'); }
+  assigned.forEach(c=>{
+    const card=document.createElement('div'); card.className='card pad';
+    card.innerHTML=`<span class="stamp" style="font-size:10.5px;padding:3px 7px;">${c.id}</span>
+    <div style="font-weight:700;margin-top:8px;">${c.type}</div>
+    <div class="small muted">${icon('pin',12)} ${c.ward}</div>
+    <div class="tag-row" style="margin:10px 0;"><span class="chip chip-${c.severity.toLowerCase()}">${c.severity}</span><span class="chip ${chipClassForStatus(c.status)}">${c.status}</span></div>
+    <div style="display:flex;flex-direction:column;gap:6px;">
+      <button class="btn btn-outline btn-sm" data-a="nav">${icon('map',13)} Navigate to location</button>
+      ${c.status!=='In Progress'?`<button class="btn btn-amber btn-sm" data-a="start">${icon('worker',13)} Mark work started</button>`:
+      `<button class="btn btn-primary btn-sm" data-a="complete">${icon('check',13)} Upload after-image & complete</button>`}
+    </div>`;
+    card.querySelector('[data-a="nav"]').onclick=()=>toast('Opening navigation (simulated)','default');
+    const startBtn = card.querySelector('[data-a="start"]');
+    if(startBtn) startBtn.onclick=()=>{ c.status='In Progress'; c.history.push({stage:'In Progress',ts:Date.now(),note:'Field worker marked work as started. Before-image logged.'}); toast('Work started · '+c.id,'success'); render(); };
+    const compBtn = card.querySelector('[data-a="complete"]');
+    if(compBtn) compBtn.onclick=()=>{ resolveComplaint(c); };
+    list.appendChild(card);
+  });
+  return el;
+}
+function resolveComplaint(c){
+  c.status='Resolved';
+  c.history.push({stage:'Resolved', ts:Date.now(), note:'Field worker uploaded after-image; issue marked resolved. Awaiting citizen confirmation.'});
+  DB.notifications.unshift({id:uid('N'), ts:Date.now(), unread:true, icon:'check', title:`${c.id} marked resolved`, sub:'Citizen feedback requested', audience:'all'});
+  toast(c.id+' marked resolved — citizen notified','success');
+  render();
+}
+
+/* Staff-view complaint detail (with actions) */
+function StaffComplaintDetail(id){
+  const c = DB.complaints.find(x=>x.id===id);
+  const el = document.createElement('div');
+  if(!c){ el.innerHTML=EmptyState('Not found',''); return el; }
+  const detailHtml = ComplaintDetail(id, false);
+  el.appendChild(detailHtml);
+  const actions = document.createElement('div'); actions.className='card pad'; actions.style.marginTop='14px';
+  actions.innerHTML = `<b style="font-size:13px;">Officer actions</b><div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;" id="act-row"></div>`;
+  el.appendChild(actions);
+  const row = actions.querySelector('#act-row');
+  function addBtn(label,cls,fn){ const b=document.createElement('button'); b.className='btn btn-sm '+cls; b.textContent=label; b.onclick=fn; row.appendChild(b); }
+  if(['Assigned','Verified'].includes(c.status)) addBtn('Accept complaint','btn-primary',()=>{ c.status='Accepted'; c.history.push({stage:'Accepted',ts:Date.now(),note:'Officer accepted complaint for action.'}); toast('Accepted '+c.id,'success'); render(); });
+  if(c.status==='Accepted') addBtn('Assign field worker & start','btn-amber',()=>{ c.status='In Progress'; c.history.push({stage:'In Progress',ts:Date.now(),note:'Field worker assigned and dispatched.'}); toast('Work started on '+c.id,'success'); render(); });
+  if(c.status==='In Progress') addBtn('Mark resolved','btn-primary',()=>resolveComplaint(c));
+  if(!['Resolved','Closed','Suspicious'].includes(c.status)) addBtn('Escalate now','btn-danger',()=>{ c.status='Escalated'; c.escalated=true; c.history.push({stage:'Escalated',ts:Date.now(),note:'Manually escalated to Higher Authority for urgent review.'}); toast('Escalated '+c.id,'warn'); render(); });
+  addBtn('Add remark','btn-outline',()=>setModal({type:'remark', id:c.id}));
+  return el;
+}
+
+/* ---------------- HOTSPOT MAP (shared staff) ---------------- */
+function HotspotMap(){
+  const el=document.createElement('div');
+  el.innerHTML=`<div class="page-head"><div><div class="eyebrow">Geo intelligence</div><h1>Civic Hotspot Map</h1><p>Complaint markers with severity heat and category filters.</p></div></div>
+  <div class="card pad" style="margin-bottom:14px;">
+    <div class="flex items-center gap-10" style="flex-wrap:wrap;">
+      <span class="small" style="font-weight:600;">${icon('filter',14)} Filter:</span>
+      <select id="f-cat" style="width:auto;"><option value="all">All categories</option>${CATEGORIES.map(c=>`<option value="${c.id}">${c.name}</option>`).join('')}</select>
+      <select id="f-sev" style="width:auto;"><option value="all">All severities</option>${SEVERITY_ORDER.map(s=>`<option value="${s}">${s}</option>`).join('')}</select>
+    </div>
+  </div>
+  <div class="grid" style="grid-template-columns:2fr 1fr;gap:14px;">
+    <div class="card" style="height:460px;"><div class="map-box" id="big-map" style="height:100%;"></div></div>
+    <div class="card pad" style="max-height:460px;overflow-y:auto;">
+      <b style="font-size:13px;">Repeat problem areas</b>
+      <div style="margin-top:10px;display:flex;flex-direction:column;gap:10px;" id="hotspot-list"></div>
+    </div>
+  </div>`;
+  function draw(){
+    const map = el.querySelector('#big-map'); map.innerHTML='';
+    let list = DB.complaints;
+    if(S.mapFilter.category!=='all') list = list.filter(c=>c.categoryId===S.mapFilter.category);
+    if(S.mapFilter.severity!=='all') list = list.filter(c=>c.severity===S.mapFilter.severity);
+    const lats=list.map(c=>c.location.lat), lngs=list.map(c=>c.location.lng);
+    const minLat=Math.min(...lats),maxLat=Math.max(...lats),minLng=Math.min(...lngs),maxLng=Math.max(...lngs);
+    list.forEach(c=>{
+      const x = 6+((c.location.lng-minLng)/(maxLng-minLng||1))*88;
+      const y = 6+(1-(c.location.lat-minLat)/(maxLat-minLat||1))*88;
+      const pin=document.createElement('div'); pin.className='map-pin '+c.severity.toLowerCase();
+      pin.style.left=x+'%'; pin.style.top=y+'%';
+      pin.innerHTML=`<div class="dot"></div><div class="pin-label">${c.id} · ${c.type}</div>`;
+      pin.onclick=()=>{ S._activeComplaintId=c.id; go('complaint-detail'); };
+      map.appendChild(pin);
+    });
+    map.innerHTML+=`<div class="map-legend"><span><i style="background:var(--sev-critical);"></i>Critical</span><span><i style="background:var(--sev-high);"></i>High</span><span><i style="background:var(--sev-medium);"></i>Medium</span><span><i style="background:var(--sev-low);"></i>Low</span></div>`;
+    // hotspot ranking by ward
+    const byWard = {};
+    list.forEach(c=>{ byWard[c.ward]=(byWard[c.ward]||0)+1; });
+    const ranked = Object.entries(byWard).sort((a,b)=>b[1]-a[1]);
+    const hl = el.querySelector('#hotspot-list'); hl.innerHTML='';
+    ranked.forEach(([ward,count])=>{
+      hl.innerHTML += `<div class="flex items-center justify-between"><span class="small">${ward}</span><span class="chip chip-medium">${count} issues</span></div>`;
+    });
+  }
+  el.querySelector('#f-cat').onchange=(e)=>{ S.mapFilter.category=e.target.value; draw(); };
+  el.querySelector('#f-sev').onchange=(e)=>{ S.mapFilter.severity=e.target.value; draw(); };
+  setTimeout(draw,0);
+  return el;
+}
+
+/* ---------------- ADMIN DASHBOARD ---------------- */
+function AdminDashboard(){
+  const el=document.createElement('div');
+  const all = DB.complaints;
+  const kpis = [
+    ['Total Complaints', all.length, 'navy'],
+    ['Resolved', all.filter(c=>['Resolved','Closed'].includes(c.status)).length, 'teal'],
+    ['Pending', all.filter(c=>!['Resolved','Closed'].includes(c.status)).length, 'amber'],
+    ['Escalated', all.filter(c=>c.status==='Escalated').length, 'red'],
+    ['Critical', all.filter(c=>c.severity==='Critical').length, 'red'],
+    ['Duplicates Merged', 6, 'navy'],
+    ['Suspicious Reports', all.filter(c=>c.status==='Suspicious').length || 2, 'amber'],
+    ['Avg Resolution', '5.8 days', 'teal'],
+  ];
+  el.innerHTML = `<div class="page-head"><div><div class="eyebrow">City-wide oversight</div><h1>Administrator Overview</h1><p>Live snapshot across all departments and jurisdictions.</p></div>
+  <button class="btn btn-outline" id="sim-time-a">${icon('clock',15)} Simulate 12 hours passing</button></div>
+  <div class="grid grid-4" id="kp"></div>`;
+  const kp = el.querySelector('#kp');
+  kpis.forEach(([l,v,a])=>{ kp.innerHTML += `<div class="card kpi accent-${a}"><div class="label">${l}</div><div class="value">${v}</div></div>`; });
+
+  const row2 = document.createElement('div'); row2.className='grid'; row2.style.gridTemplateColumns='1.3fr 1fr'; row2.style.marginTop='16px'; row2.style.gap='14px';
+  const catCard = document.createElement('div'); catCard.className='card pad';
+  catCard.innerHTML = `<b style="font-size:13px;">Complaints by category</b>`;
+  catCard.appendChild(barChart(categoryCounts(), 'var(--navy)'));
+  row2.appendChild(catCard);
+
+  const trendCard = document.createElement('div'); trendCard.className='card pad';
+  trendCard.innerHTML = `<b style="font-size:13px;">Monthly trend</b>`;
+  trendCard.appendChild(lineChart(monthlyTrend()));
+  row2.appendChild(trendCard);
+  el.appendChild(row2);
+
+  const row3 = document.createElement('div'); row3.className='grid'; row3.style.gridTemplateColumns='1fr 1fr'; row3.style.marginTop='14px'; row3.style.gap='14px';
+  const priCard = document.createElement('div'); priCard.className='card pad';
+  priCard.innerHTML=`<b style="font-size:13px;">Priority distribution</b>`;
+  priCard.appendChild(donutChart(priorityCounts()));
+  row3.appendChild(priCard);
+
+  const deptCard = document.createElement('div'); deptCard.className='card pad';
+  deptCard.innerHTML = `<b style="font-size:13px;">Recent escalations</b>`;
+  const escList = document.createElement('div'); escList.style.marginTop='10px';
+  all.filter(c=>c.status==='Escalated').slice(0,5).forEach(c=>{
+    escList.innerHTML += `<div class="flex items-center justify-between" style="padding:7px 0;border-bottom:1px solid var(--line);"><span class="small mono">${c.id}</span><span class="small">${c.type}</span><span class="chip chip-escalated">Escalated</span></div>`;
+  });
+  if(!all.filter(c=>c.status==='Escalated').length) escList.innerHTML = `<p class="small muted">No active escalations.</p>`;
+  deptCard.appendChild(escList);
+  row3.appendChild(deptCard);
+  el.appendChild(row3);
+
+  el.querySelector('#sim-time-a').onclick=()=>{ simulateTimePass(12); toast('Simulated 12 hours — escalation engine re-evaluated all complaints','warn'); render(); };
+  return el;
+}
+function categoryCounts(){
+  return CATEGORIES.map(c=>({label:c.name.split(' ')[0], value: DB.complaints.filter(x=>x.categoryId===c.id).length}));
+}
+function priorityCounts(){
+  const m={CRITICAL:0,HIGH:0,MEDIUM:0,LOW:0};
+  DB.complaints.forEach(c=>m[c.priorityLabel]++);
+  return [
+    {label:'Critical', value:m.CRITICAL, color:'var(--sev-critical)'},
+    {label:'High', value:m.HIGH, color:'var(--sev-high)'},
+    {label:'Medium', value:m.MEDIUM, color:'var(--sev-medium)'},
+    {label:'Low', value:m.LOW, color:'var(--sev-low)'},
+  ];
+}
+function monthlyTrend(){
+  return [
+    {label:'Mar',value:40},{label:'Apr',value:52},{label:'May',value:61},{label:'Jun',value:58},
+    {label:'Jul',value:70},{label:'Aug',value:DB.complaints.length},
+  ];
+}
+/* --- tiny inline SVG chart helpers (no external chart lib needed) --- */
+function barChart(data, color){
+  const w=520,h=190,pad=28; const max=Math.max(...data.map(d=>d.value),1);
+  const bw = (w-pad*2)/data.length;
+  let bars='';
+  data.forEach((d,i)=>{
+    const bh = (d.value/max)*(h-50);
+    const x = pad + i*bw + bw*0.18;
+    const y = h-30-bh;
+    bars += `<rect x="${x}" y="${y}" width="${bw*0.64}" height="${bh}" rx="4" fill="${color}" opacity="${0.55+0.45*(d.value/max)}"><title>${d.label}: ${d.value}</title></rect>
+    <text x="${x+bw*0.32}" y="${h-14}" font-size="9.5" fill="var(--ink-soft)" text-anchor="middle">${d.label}</text>
+    <text x="${x+bw*0.32}" y="${y-5}" font-size="10" fill="var(--ink)" text-anchor="middle" font-weight="700">${d.value}</text>`;
+  });
+  const svg = document.createElement('div');
+  svg.innerHTML = `<svg viewBox="0 0 ${w} ${h}" style="width:100%;height:auto;">${bars}</svg>`;
+  return svg;
+}
+function lineChart(data){
+  const w=460,h=190,pad=28; const max=Math.max(...data.map(d=>d.value),1);
+  const stepX = (w-pad*2)/(data.length-1);
+  let pts = data.map((d,i)=>`${pad+i*stepX},${h-30-(d.value/max)*(h-50)}`);
+  const line = pts.join(' ');
+  const area = `${pad},${h-30} ${line} ${pad+(data.length-1)*stepX},${h-30}`;
+  let dots='', labels='';
+  data.forEach((d,i)=>{
+    const x=pad+i*stepX, y=h-30-(d.value/max)*(h-50);
+    dots += `<circle cx="${x}" cy="${y}" r="3.4" fill="var(--amber)" stroke="#fff" stroke-width="1.5"/>`;
+    labels += `<text x="${x}" y="${h-14}" font-size="9.5" fill="var(--ink-soft)" text-anchor="middle">${d.label}</text>`;
+  });
+  const svg = document.createElement('div');
+  svg.innerHTML = `<svg viewBox="0 0 ${w} ${h}" style="width:100%;height:auto;">
+    <polygon points="${area}" fill="var(--amber)" opacity="0.12"/>
+    <polyline points="${line}" fill="none" stroke="var(--navy)" stroke-width="2.2"/>
+    ${dots}${labels}
+  </svg>`;
+  return svg;
+}
+function donutChart(data){
+  const total = data.reduce((a,b)=>a+b.value,0)||1;
+  let angle=0; const r=54,cx=70,cy=70;
+  let paths='';
+  data.forEach(d=>{
+    const frac = d.value/total;
+    const a0=angle, a1=angle+frac*2*Math.PI;
+    const x0=cx+r*Math.sin(a0), y0=cy-r*Math.cos(a0);
+    const x1=cx+r*Math.sin(a1), y1=cy-r*Math.cos(a1);
+    const large = frac>0.5?1:0;
+    paths += `<path d="M${cx},${cy} L${x0},${y0} A${r},${r} 0 ${large} 1 ${x1},${y1} Z" fill="${d.color}" opacity="0.9"><title>${d.label}: ${d.value}</title></path>`;
+    angle=a1;
+  });
+  const wrap=document.createElement('div'); wrap.style.cssText='display:flex;align-items:center;gap:18px;margin-top:8px;';
+  wrap.innerHTML = `<svg width="140" height="140" viewBox="0 0 140 140">${paths}<circle cx="70" cy="70" r="30" fill="#fff"/></svg>
+  <div style="display:flex;flex-direction:column;gap:6px;">
+    ${data.map(d=>`<div class="flex items-center gap-8 small"><i style="width:9px;height:9px;border-radius:50%;background:${d.color};display:inline-block;"></i>${d.label} — <b>${d.value}</b></div>`).join('')}
+  </div>`;
+  return wrap;
+}
+
+function AllComplaintsTable(){
+  const el=document.createElement('div');
+  el.innerHTML = `<div class="page-head"><div><div class="eyebrow">Registry</div><h1>All Complaints</h1></div></div>
+  <div class="card pad" style="margin-bottom:14px;">
+    <div class="flex gap-10" style="flex-wrap:wrap;">
+      <input type="text" id="q" placeholder="Search by ID, type, citizen..." style="max-width:260px;">
+      <select id="f-status" style="width:auto;"><option value="all">All statuses</option>${['Submitted','Verified','Assigned','Accepted','In Progress','Resolved','Closed','Escalated','Reopened','Suspicious'].map(s=>`<option>${s}</option>`).join('')}</select>
+      <select id="f-dept" style="width:auto;"><option value="all">All departments</option>${[...new Set(CATEGORIES.map(c=>c.dept))].map(d=>`<option>${d}</option>`).join('')}</select>
+    </div>
+  </div>
+  <div class="card"><div class="table-wrap" id="tbl"></div></div>`;
+  function draw(){
+    let list=DB.complaints;
+    const q = el.querySelector('#q').value.toLowerCase();
+    const st = el.querySelector('#f-status').value;
+    const dp = el.querySelector('#f-dept').value;
+    if(q) list = list.filter(c=>c.id.toLowerCase().includes(q)||c.type.toLowerCase().includes(q)||c.citizen.toLowerCase().includes(q));
+    if(st!=='all') list = list.filter(c=>c.status===st);
+    if(dp!=='all') list = list.filter(c=>c.department===dp);
+    el.querySelector('#tbl').innerHTML='';
+    el.querySelector('#tbl').appendChild(ComplaintTable(list, true));
+  }
+  ['#q','#f-status','#f-dept'].forEach(sel=> el.querySelector(sel).oninput = draw);
+  setTimeout(draw,0);
+  return el;
+}
+
+function DepartmentsView(authorityMode){
+  const el=document.createElement('div');
+  const perf = computePerformance();
+  el.innerHTML = `<div class="page-head"><div><div class="eyebrow">${authorityMode?'Regional review':'City departments'}</div><h1>Authority Performance</h1><p>Action Efficiency Score is an administrative indicator, not an individual employee evaluation.</p></div></div>
+  <div class="grid grid-3" id="perf-cards" style="margin-bottom:18px;"></div>
+  <div class="card"><div class="pad" style="border-bottom:1px solid var(--line);"><b>Department scorecard</b></div><div class="table-wrap" id="perf-table"></div></div>`;
+  const cards = el.querySelector('#perf-cards');
+  perf.slice(0,3).forEach(d=>{
+    cards.innerHTML += `<div class="card pad">
+      <div class="flex items-center justify-between"><b style="font-size:12.5px;">${d.dept}</b></div>
+      <div class="priority-score-lg" style="margin:8px 0 2px;color:${d.score>=80?'var(--teal)':d.score>=60?'var(--amber)':'var(--red)'};">${d.score}<span style="font-size:14px;color:var(--ink-soft);">/100</span></div>
+      <div class="progress-bar"><div style="width:${d.score}%;background:${d.score>=80?'var(--teal)':d.score>=60?'var(--amber)':'var(--red)'};"></div></div>
+      <div class="tag-row" style="margin-top:10px;">${d.badges.map(b=>`<span class="chip chip-verified">${icon('award',10)} ${b}</span>`).join('')}</div>
+    </div>`;
+  });
+  const table=document.createElement('table');
+  table.innerHTML=`<thead><tr><th>Department</th><th>Score</th><th>Resolution Rate</th><th>Avg Response</th><th>Avg Resolution</th><th>Escalation Rate</th><th>Badges</th></tr></thead>`;
+  const tb=document.createElement('tbody');
+  perf.forEach(d=>{
+    tb.innerHTML += `<tr><td style="font-weight:600;">${d.dept}</td><td><b>${d.score}</b></td><td>${d.resolutionRate}%</td><td>${d.avgResponse}h</td><td>${d.avgResolution}h</td><td>${d.escalationRate}%</td><td class="small">${d.badges.join(', ')||'—'}</td></tr>`;
+  });
+  table.appendChild(tb);
+  el.querySelector('#perf-table').appendChild(table);
+  return el;
+}
+
+function AnalyticsView(){
+  const el=document.createElement('div');
+  el.innerHTML=`<div class="page-head"><div><div class="eyebrow">Civic intelligence</div><h1>Analytics</h1><p>Planning-grade metrics derived from the complaint lifecycle.</p></div></div>`;
+  const cc = categoryCounts().sort((a,b)=>b.value-a.value);
+  const wardCounts = {};
+  DB.complaints.forEach(c=> wardCounts[c.ward]=(wardCounts[c.ward]||0)+1);
+  const topWard = Object.entries(wardCounts).sort((a,b)=>b[1]-a[1])[0];
+  const grid = document.createElement('div'); grid.className='grid grid-4'; grid.style.marginBottom='16px';
+  grid.innerHTML = `
+    <div class="card kpi accent-navy"><div class="label">Most common issue</div><div class="value" style="font-size:16px;">${cc[0].label}</div><div class="sub">${cc[0].value} reports</div></div>
+    <div class="card kpi accent-amber"><div class="label">Most affected area</div><div class="value" style="font-size:16px;">${topWard[0].split('—')[1]||topWard[0]}</div><div class="sub">${topWard[1]} reports</div></div>
+    <div class="card kpi accent-teal"><div class="label">Avg resolution time</div><div class="value">5.8d</div></div>
+    <div class="card kpi accent-red"><div class="label">Escalation count</div><div class="value">${DB.complaints.filter(c=>c.status==='Escalated').length}</div></div>`;
+  el.appendChild(grid);
+  const row = document.createElement('div'); row.className='grid'; row.style.gridTemplateColumns='1fr 1fr'; row.style.gap='14px';
+  const c1=document.createElement('div'); c1.className='card pad'; c1.innerHTML='<b style="font-size:13px;">Issues by category</b>'; c1.appendChild(barChart(cc,'var(--teal)'));
+  const c2=document.createElement('div'); c2.className='card pad'; c2.innerHTML='<b style="font-size:13px;">Resolution trend</b>'; c2.appendChild(lineChart(monthlyTrend()));
+  row.appendChild(c1); row.appendChild(c2);
+  el.appendChild(row);
+  const row2 = document.createElement('div'); row2.className='card pad'; row2.style.marginTop='14px';
+  row2.innerHTML = `<b style="font-size:13px;">Citizen participation & duplicate reduction</b>
+  <div class="grid grid-3" style="margin-top:12px;">
+    <div><div class="small muted">Total community votes</div><div style="font-weight:700;font-size:20px;">${DB.complaints.reduce((a,c)=>a+c.supporters,0)}</div></div>
+    <div><div class="small muted">Duplicate complaints merged</div><div style="font-weight:700;font-size:20px;">6</div></div>
+    <div><div class="small muted">Overall satisfaction score</div><div style="font-weight:700;font-size:20px;">4.2 / 5</div></div>
+  </div>`;
+  el.appendChild(row2);
+  return el;
+}
+
+function ConfigView(){
+  const el=document.createElement('div');
+  el.innerHTML=`<div class="page-head"><div><div class="eyebrow">System configuration</div><h1>Configuration</h1><p>Adjust the parameters used by the priority engine, escalation timers, and routing rules.</p></div></div>`;
+  const w = document.createElement('div'); w.className='card pad'; w.style.marginBottom='16px';
+  w.innerHTML = `<b style="font-size:13px;">Priority score weights</b><p class="small muted">Must total 100%. Applied instantly across the platform.</p><div id="weight-rows" style="margin-top:12px;display:flex;flex-direction:column;gap:12px;"></div><div id="wsum" class="small muted" style="margin-top:8px;"></div>`;
+  el.appendChild(w);
+  const wr = w.querySelector('#weight-rows');
+  const labels = {severity:'Severity', community:'Community Support', impact:'Public Impact', waiting:'Waiting Time'};
+  Object.keys(CONFIG.weights).forEach(k=>{
+    const row=document.createElement('div');
+    row.innerHTML=`<div class="flex items-center justify-between"><label class="f" style="margin:0;">${labels[k]}</label><span class="mono small" id="v-${k}">${CONFIG.weights[k]}%</span></div>
+    <div class="slider-row"><input type="range" min="0" max="100" value="${CONFIG.weights[k]}" id="s-${k}"></div>`;
+    wr.appendChild(row);
+  });
+  function updateSum(){
+    const sum = Object.values(CONFIG.weights).reduce((a,b)=>a+b,0);
+    w.querySelector('#wsum').innerHTML = sum===100 ? `<span style="color:var(--teal);font-weight:600;">${icon('check',12)} Weights total 100%</span>` : `<span style="color:var(--red);font-weight:600;">Weights total ${sum}% — should equal 100%</span>`;
+  }
+  Object.keys(CONFIG.weights).forEach(k=>{
+    w.querySelector('#s-'+k).oninput=(e)=>{ CONFIG.weights[k]=+e.target.value; w.querySelector('#v-'+k).textContent=e.target.value+'%'; updateSum();
+      DB.complaints.forEach(c=>{ c.priority=computePriority(c); c.priorityLabel=priorityLabel(c.priority); });
+    };
+  });
+  updateSum();
+
+  const dl = document.createElement('div'); dl.className='card pad'; dl.style.marginBottom='16px';
+  dl.innerHTML = `<b style="font-size:13px;">Escalation deadlines (hours)</b><p class="small muted">Complaints exceeding the deadline are automatically escalated to Higher Authority.</p><div class="grid grid-4" style="margin-top:12px;" id="dl-rows"></div>`;
+  el.appendChild(dl);
+  const dlr = dl.querySelector('#dl-rows');
+  SEVERITY_ORDER.forEach(s=>{
+    const box=document.createElement('div');
+    box.innerHTML=`<label class="f">${s}</label><input type="number" value="${CONFIG.deadlines[s]}" id="d-${s}">`;
+    dlr.appendChild(box);
+  });
+  SEVERITY_ORDER.forEach(s=>{ dl.querySelector('#d-'+s).oninput=(e)=>{ CONFIG.deadlines[s]=+e.target.value||1; toast('Deadline for '+s+' updated to '+CONFIG.deadlines[s]+'h','default'); }; });
+
+  const rt = document.createElement('div'); rt.className='card pad';
+  rt.innerHTML = `<b style="font-size:13px;">Department routing rules</b><p class="small muted">Determines automatic department assignment by issue category.</p><div style="margin-top:12px;display:flex;flex-direction:column;gap:8px;" id="route-rows"></div>`;
+  el.appendChild(rt);
+  const rr = rt.querySelector('#route-rows');
+  CATEGORIES.forEach(c=>{
+    rr.innerHTML += `<div class="flex items-center justify-between" style="padding:7px 0;border-bottom:1px solid var(--line);"><span class="small">${c.name}</span><span class="small" style="font-weight:600;">${icon('arrowRight',12)} ${ROUTING_RULES[c.id]}</span></div>`;
+  });
+  return el;
+}
+
+/* ---------------- HIGHER AUTHORITY ---------------- */
+function AuthorityDashboard(){
+  const el=document.createElement('div');
+  const esc = DB.complaints.filter(c=>c.status==='Escalated');
+  const perf = computePerformance();
+  el.innerHTML = `<div class="page-head"><div><div class="eyebrow">Regional oversight</div><h1>Higher Authority Overview</h1><p>Escalation monitoring and department accountability.</p></div>
+  <button class="btn btn-outline" id="sim-time-h">${icon('clock',15)} Simulate 24 hours passing</button></div>
+  <div class="grid grid-4" style="margin-bottom:16px;">
+    <div class="card kpi accent-red"><div class="label">Active Escalations</div><div class="value">${esc.length}</div></div>
+    <div class="card kpi accent-navy"><div class="label">Critical Open</div><div class="value">${DB.complaints.filter(c=>c.severity==='Critical'&&!['Resolved','Closed'].includes(c.status)).length}</div></div>
+    <div class="card kpi accent-teal"><div class="label">Best Department</div><div class="value" style="font-size:15px;">${perf[0]?.dept.split(' ')[0]||'—'}</div></div>
+    <div class="card kpi accent-amber"><div class="label">Avg City Score</div><div class="value">${Math.round(perf.reduce((a,d)=>a+d.score,0)/(perf.length||1))}</div></div>
+  </div>
+  <div class="card"><div class="pad" style="border-bottom:1px solid var(--line);"><b>Escalated complaints requiring review</b></div><div class="table-wrap" id="et"></div></div>`;
+  el.querySelector('#et').appendChild(ComplaintTable(esc, true));
+  el.querySelector('#sim-time-h').onclick=()=>{ simulateTimePass(24); toast('Simulated 24 hours — escalation chain re-evaluated','warn'); render(); };
+  return el;
+}
+function EscalationsView(){
+  const el=document.createElement('div');
+  const esc = DB.complaints.filter(c=>c.status==='Escalated');
+  el.innerHTML = `<div class="page-head"><div><div class="eyebrow">Delay management</div><h1>Escalations</h1><p>Officer → Higher Authority → Administrator chain, triggered automatically when a deadline lapses.</p></div></div>
+  <div class="grid" id="esc-list" style="gap:12px;"></div>`;
+  const list = el.querySelector('#esc-list');
+  if(!esc.length) list.innerHTML = EmptyState('No active escalations','All departments are currently within their configured deadlines.');
+  esc.forEach(c=>{
+    const card=document.createElement('div'); card.className='card pad';
+    card.innerHTML = `<div class="flex items-center justify-between"><span class="stamp" style="font-size:10.5px;padding:3px 7px;">${c.id}</span><span class="chip chip-escalated">Escalated</span></div>
+    <div style="font-weight:700;margin-top:8px;">${c.type}</div>
+    <div class="small muted">${c.department} · ${c.ward}</div>
+    <div class="divider"></div>
+    <div class="timeline">
+      <div class="tl-item done"><div class="tl-title">Department Officer</div><div class="tl-meta">Deadline exceeded</div></div>
+      <div class="tl-item done"><div class="tl-title">Higher Authority</div><div class="tl-meta">Notified for review</div></div>
+      <div class="tl-item current"><div class="tl-title">Administrator</div><div class="tl-meta">Escalation visible on admin dashboard</div></div>
+    </div>
+    <button class="btn btn-primary btn-sm btn-block" data-open>${icon('arrowRight',13)} Review complaint</button>`;
+    card.querySelector('[data-open]').onclick=()=>{ S._activeComplaintId=c.id; go('complaint-detail'); };
+    list.appendChild(card);
+  });
+  return el;
+}
+
+/* ---------------- TIME SIMULATION (drives escalation engine) ---------------- */
+function simulateTimePass(hours){
+  DB.complaints.forEach(c=>{
+    if(['Resolved','Closed','Suspicious'].includes(c.status)) return;
+    c.createdAt -= 0; // no-op, we shift virtual "now" by adjusting deadlines check via createdAt offset
+  });
+  // simulate by pulling createdAt further into the past
+  DB.complaints.forEach(c=>{
+    if(['Resolved','Closed'].includes(c.status)) return;
+    c._simShift = (c._simShift||0) + hours*3600000;
+    const virtualCreated = c.createdAt - (c._simShift);
+    const hl = (virtualCreated + (CONFIG.deadlines[c.severity]||72)*3600000 - Date.now())/3600000;
+    if(hl < 0 && c.status !== 'Escalated'){
+      c.status = 'Escalated'; c.escalated = true;
+      c.history.push({stage:'Escalated', ts:Date.now(), note:'Deadline exceeded — automatically escalated to Higher Authority.'});
+      DB.notifications.unshift({id:uid('N'), ts:Date.now(), unread:true, icon:'esc', title:`${c.id} auto-escalated`, sub:c.department, audience:'staff'});
+    }
+    c.createdAt = virtualCreated + hours*3600000*0; // keep createdAt display stable, deadline tracked via _simShift
+    c.createdAt = virtualCreated;
+  });
+  DB.complaints.forEach(c=>{ c.priority=computePriority(c); c.priorityLabel=priorityLabel(c.priority); });
+}
+// override hoursLeft to consider simShift naturally since we mutate createdAt directly above.
+
+/* ============================================================
+   MODALS
+   ============================================================ */
+function ModalHost(){
+  const ov = document.createElement('div'); ov.className='overlay';
+  ov.onclick=(e)=>{ if(e.target===ov) setModal(null); };
+  const m = document.createElement('div'); m.className='modal';
+  const type = S.modal.type;
+  if(type==='emergency') m.appendChild(EmergencyModal());
+  else if(type==='remark') m.appendChild(RemarkModal(S.modal.id));
+  else if(type==='notifications') m.appendChild(NotifModal());
+  ov.appendChild(m);
+  return ov;
+}
+function ModalHead(title){
+  const h=document.createElement('div'); h.className='modal-head';
+  h.innerHTML = `<b>${title}</b><button class="close-x">${icon('x',16)}</button>`;
+  h.querySelector('.close-x').onclick=()=>setModal(null);
+  return h;
+}
+function EmergencyModal(){
+  const w=document.createElement('div');
+  w.appendChild(ModalHead('Emergency Assistance'));
+  const body=document.createElement('div'); body.className='modal-body';
+  body.innerHTML = `
+    <div class="danger-banner" style="margin-bottom:14px;">${icon('alert',15)}<span>Emergency reports receive <b>CRITICAL priority</b> and route immediately to the configured emergency authority.</span></div>
+    <div class="field"><label class="f">Emergency type</label>
+      <select id="etype"><option>Flooding</option><option>Natural disaster</option><option>Dangerous electrical hazard</option><option>Collapsed infrastructure</option><option>Other urgent situation</option></select></div>
+    <div class="field"><label class="f">Description</label><textarea id="edesc" placeholder="Briefly describe the emergency"></textarea></div>
+    <div class="field"><label class="f">Estimated people affected</label><input type="number" id="eaffected" placeholder="e.g. 15"></div>
+    <div class="field"><label class="f">Contact number (optional)</label><input type="tel" id="econtact" placeholder="Optional"></div>
+    <div class="hint-banner">${icon('pin',15)}<span>Current GPS location will be attached automatically.</span></div>`;
+  w.appendChild(body);
+  const foot=document.createElement('div'); foot.className='modal-foot';
+  foot.innerHTML=`<button class="btn btn-outline" id="cancel">Cancel</button><button class="btn btn-danger" id="send">${icon('send',14)} Send Emergency Report</button>`;
+  w.appendChild(foot);
+  foot.querySelector('#cancel').onclick=()=>setModal(null);
+  foot.querySelector('#send').onclick=()=>{
+    const now=Date.now();
+    const id = `CIV-2026-${String(DB.complaints.length+1).padStart(5,'0')}`;
+    const loc = randLoc({lat:13.06,lng:80.24});
+    const c = {
+      id, categoryId:'emergency', categoryName:'Emergency / Disaster', type: body.querySelector('#etype').value,
+      description: body.querySelector('#edesc').value || 'Emergency reported by citizen.',
+      images:[1], location:loc, ward:nearestWard(loc), department:'District Emergency Response Cell',
+      officer:OFFICERS['District Emergency Response Cell'], citizen:S.user.name, createdAt:now,
+      status:'Assigned', supporters:0, verification:'VERIFIED', severity:'Critical', severityReason:'Emergency category — immediate public safety priority.',
+      history:[
+        {stage:'Submitted', ts:now, note:'Emergency report received.'},
+        {stage:'Verified', ts:now+3000, note:'Emergency reports bypass standard verification queue.'},
+        {stage:'Assigned', ts:now+6000, note:'Immediately routed to District Emergency Response Cell.'},
+      ],
+      feedback:null, escalated:false, aiConfidence:99,
+    };
+    c.priority=100; c.priorityLabel='CRITICAL';
+    DB.complaints.unshift(c);
+    DB.notifications.unshift({id:uid('N'), ts:now, unread:true, icon:'alert', title:'Emergency alert dispatched', sub:c.id, audience:'all'});
+    setModal(null);
+    toast('Emergency report sent — CRITICAL priority assigned','danger');
+    S._activeComplaintId=c.id; go('complaint-detail');
+  };
+  return w;
+}
+function RemarkModal(id){
+  const c = DB.complaints.find(x=>x.id===id);
+  const w=document.createElement('div');
+  w.appendChild(ModalHead('Add remark — '+id));
+  const body=document.createElement('div'); body.className='modal-body';
+  body.innerHTML = `<textarea id="rmk" placeholder="Add an action-taken note..."></textarea>`;
+  w.appendChild(body);
+  const foot=document.createElement('div'); foot.className='modal-foot';
+  foot.innerHTML=`<button class="btn btn-outline" id="c1">Cancel</button><button class="btn btn-primary" id="s1">Save remark</button>`;
+  w.appendChild(foot);
+  foot.querySelector('#c1').onclick=()=>setModal(null);
+  foot.querySelector('#s1').onclick=()=>{
+    const v = body.querySelector('#rmk').value.trim();
+    if(!v){ toast('Enter a remark first','warn'); return; }
+    c.history.push({stage:c.status, ts:Date.now(), note:'Officer remark: '+v});
+    setModal(null); toast('Remark added to '+id,'success'); render();
+  };
+  return w;
+}
+function NotifModal(){
+  const w=document.createElement('div');
+  w.appendChild(ModalHead('Notifications'));
+  const body=document.createElement('div'); body.className='modal-body'; body.style.padding='0';
+  DB.notifications.slice(0,15).forEach(n=>{
+    const it=document.createElement('div'); it.className='notif-item'+(n.unread?' notif-unread':'');
+    it.style.padding='12px 18px';
+    it.innerHTML=`<div class="notif-ico">${icon(n.icon,16)}</div><div style="flex:1;"><div class="notif-text">${n.title}</div><div class="notif-sub">${n.sub}</div></div><div class="notif-time">${timeAgo(n.ts)}</div>`;
+    it.onclick=()=>{ n.unread=false; render(); };
+    body.appendChild(it);
+  });
+  w.appendChild(body);
+  return w;
+}
+
+/* ============================================================
+   BOOT
+   ============================================================ */
+render();
+</script>
+</body>
+</html>
